@@ -1,0 +1,87 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block page_title %}Delete Medicine{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'admin_medicines' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Medicines
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if medicine.image %}
+                        <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" 
+                             style="max-width: 150px; max-height: 150px;" class="img-thumbnail mb-3">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" 
+                             style="width: 150px; height: 150px; margin: 0 auto;">
+                            <i class="fas fa-pills fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i> Warning!
+                    </h6>
+                    <p>You are about to permanently delete the following medicine:</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Name:</strong></div>
+                        <div class="col-sm-8">{{ medicine.name }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Category:</strong></div>
+                        <div class="col-sm-8">{{ medicine.category.name }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Manufacturer:</strong></div>
+                        <div class="col-sm-8">{{ medicine.manufacturer }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Price:</strong></div>
+                        <div class="col-sm-8">{{ medicine.price|rupees_simple }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Stock:</strong></div>
+                        <div class="col-sm-8">{{ medicine.stock_quantity }} units</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning" role="alert">
+                    <h6><i class="fas fa-info-circle"></i> Important Notes:</h6>
+                    <ul class="mb-0">
+                        <li>This action cannot be undone</li>
+                        <li>All order history related to this medicine will be preserved</li>
+                        <li>The medicine will be permanently removed from inventory</li>
+                        <li>Customers will no longer be able to purchase this medicine</li>
+                    </ul>
+                </div>
+
+                <form method="POST" class="text-center">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash"></i> Yes, Delete Medicine
+                        </button>
+                        <a href="{% url 'admin_medicines' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Checkout - MedShop{% endblock %}
+
+{% block content %}
+<h2>Checkout</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Shipping Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="shipping_address" class="form-label">Shipping Address *</label>
+                        <textarea class="form-control" id="shipping_address" name="shipping_address" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-control" id="phone_number" name="phone_number" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ item.medicine.name }}</strong><br>
+                            <small class="text-muted">Quantity: {{ item.quantity }} × {{ item.medicine.price|rupees_simple }}</small>
+                        </div>
+                        <div>
+                            <strong>{{ item.get_total_price|rupees_simple }}</strong>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-success btn-lg">Place Order</button>
+            <a href="{% url 'cart_detail' %}" class="btn btn-outline-secondary btn-lg ms-2">Back to Cart</a>
+        </form>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <p>Subtotal: <strong>{{ total|rupees_simple }}</strong></p>
+                <p>Shipping: <strong>Free</strong></p>
+                <hr>
+                <h5>Total: <strong>{{ total|rupees_simple }}</strong></h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

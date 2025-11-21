@@ -1,0 +1,456 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'admin_generate_report' %}?type=daily" class="btn btn-outline-primary">
+        <i class="fas fa-download"></i> Export Sales
+    </a>
+    <a href="{% url 'admin_generate_report' %}?type=inventory" class="btn btn-outline-success">
+        <i class="fas fa-download"></i> Export Inventory
+    </a>
+    <button class="btn btn-outline-info" onclick="exportReport('customers')">
+        <i class="fas fa-download"></i> Export Customers
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Revenue Overview -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Today's Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_revenue|rupees_simple }}</div>
+                        <div class="text-xs text-muted">
+                            {% if yesterday_revenue > 0 %}
+                                {% widthratio today_revenue yesterday_revenue 100 as change %}
+                                {% if change > 100 %}
+                                    <i class="fas fa-arrow-up text-success"></i> +{{ change|add:"-100" }}%
+                                {% else %}
+                                    <i class="fas fa-arrow-down text-danger"></i> -{{ 100|add:change|add:"-100" }}%
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-primary">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Week Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ week_revenue|rupees_simple }}</div>
+                        <div class="text-xs text-muted">{{ week_orders }} orders</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Month Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ month_revenue|rupees_simple }}</div>
+                        <div class="text-xs text-muted">{{ month_orders }} orders</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Today's Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_orders }}</div>
+                        <div class="text-xs text-muted">New orders today</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Revenue Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Trend (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Order Status Distribution</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="orderStatusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Performing Products and Categories -->
+<div class="row mb-4">
+    <!-- Top Selling Medicines -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Top Selling Medicines</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Medicine</th>
+                                <th>Category</th>
+                                <th>Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for medicine in top_medicines %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ medicine.name }}</div>
+                                    <small class="text-muted">{{ medicine.manufacturer }}</small>
+                                </td>
+                                <td>{{ medicine.category.name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ medicine.total_sold|default:0 }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ medicine.total_sold|default:0|rupees_simple }}</strong>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No sales data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Performance -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Category Performance</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Avg Order</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in category_performance %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ category.name }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ category.total_orders|default:0 }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ category.total_revenue|default:0|rupees_simple }}</strong>
+                                </td>
+                                <td>
+                                    {% if category.total_orders > 0 %}
+                                        {% widthratio category.total_revenue category.total_orders 1 as avg_order %}
+                                        {{ avg_order|rupees_simple }}
+                                    {% else %}
+                                        ₹0.00
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No category data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Reports Section -->
+<div class="row">
+    <!-- Sales Summary -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">Sales Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 mb-3">
+                        <div class="h4 text-success">{{ month_revenue|rupees_simple }}</div>
+                        <small class="text-muted">This Month</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h6 text-primary">{{ month_orders }}</div>
+                        <small class="text-muted">Orders</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h6 text-info">
+                            {% if month_orders > 0 %}
+                                {% widthratio month_revenue month_orders 1 as avg_order %}
+                                {{ avg_order|rupees_simple }}
+                            {% else %}
+                                ₹0.00
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">Avg Order</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Status -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">Inventory Status</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>In Stock</span>
+                        <span class="text-success">85%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Low Stock</span>
+                        <span class="text-warning">10%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 10%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Out of Stock</span>
+                        <span class="text-danger">5%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-danger" style="width: 5%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Insights -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">Customer Insights</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <div class="h5 text-primary">{{ total_customers }}</div>
+                        <small class="text-muted">Total Customers</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-success">{{ active_customers }}</div>
+                        <small class="text-muted">Active Customers</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h6 text-info">{{ new_customers }}</div>
+                        <small class="text-muted">New Customers</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h6 text-warning">{{ retention_rate|floatformat:0 }}%</div>
+                        <small class="text-muted">Retention Rate</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Report Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_generate_report' %}?type=daily" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-calendar-day"></i><br>
+                            Daily Sales Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="generateReport('weekly')">
+                            <i class="fas fa-calendar-week"></i><br>
+                            Weekly Summary
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="generateReport('monthly')">
+                            <i class="fas fa-calendar-alt"></i><br>
+                            Monthly Report
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_generate_report' %}?type=inventory" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-boxes"></i><br>
+                            Inventory Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueChart = new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+        datasets: [{
+            label: 'Daily Revenue (₹)',
+            data: [12000, 19000, 8000, 15000, 20000, 17000, 22000],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toLocaleString('en-IN');
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Order Status Chart
+const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+const orderStatusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Delivered', 'Shipped', 'Confirmed', 'Pending', 'Cancelled'],
+        datasets: [{
+            data: [45, 20, 15, 12, 8],
+            backgroundColor: [
+                '#28a745',
+                '#007bff',
+                '#17a2b8',
+                '#ffc107',
+                '#dc3545'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Export functions
+function exportReport(type) {
+    alert(`Exporting ${type} report... This would download a CSV/PDF file in a real implementation.`);
+}
+
+function generateReport(period) {
+    alert(`Generating ${period} report... This would create a detailed report in a real implementation.`);
+}
+
+// Auto-refresh data every 5 minutes
+setInterval(function() {
+    // In a real implementation, you would fetch updated data via AJAX
+    console.log('Refreshing dashboard data...');
+}, 300000);
+</script>
+{% endblock %}

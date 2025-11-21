@@ -1,0 +1,228 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block page_title %}Manage Medicines{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'admin_medicine_add' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add Medicine
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
+                       placeholder="Medicine name or manufacturer">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_filter %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="stock" class="form-label">Stock Status</label>
+                <select class="form-select" id="stock" name="stock">
+                    <option value="">All Stock Levels</option>
+                    <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>In Stock (>10)</option>
+                    <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>Low Stock (1-10)</option>
+                    <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>Out of Stock (0)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_medicines' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST" action="{% url 'admin_bulk_actions' %}" id="bulkForm">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="action" class="form-label">Bulk Actions</label>
+                    <select class="form-select" id="action" name="action">
+                        <option value="">Select Action</option>
+                        <option value="activate">Activate Selected</option>
+                        <option value="deactivate">Deactivate Selected</option>
+                        <option value="delete_out_of_stock">Delete Out of Stock</option>
+                        <option value="update_stock">Update Stock</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="stockInput" style="display: none;">
+                    <label for="new_stock" class="form-label">New Stock Quantity</label>
+                    <input type="number" class="form-control" id="new_stock" name="new_stock" min="0">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure?')">
+                        <i class="fas fa-cogs"></i> Apply
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medicines Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine in medicines %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="medicine_ids" value="{{ medicine.id }}" form="bulkForm">
+                        </td>
+                        <td>
+                            {% if medicine.image %}
+                                <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" 
+                                     style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-pills text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ medicine.name }}</div>
+                            <small class="text-muted">{{ medicine.manufacturer }}</small>
+                        </td>
+                        <td>{{ medicine.category.name }}</td>
+                        <td>{{ medicine.price|rupees_simple }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if medicine.stock_quantity == 0 %}bg-danger
+                                {% elif medicine.stock_quantity <= 10 %}bg-warning
+                                {% else %}bg-success{% endif %}">
+                                {{ medicine.stock_quantity }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if medicine.prescription_type == 'RX' %}
+                                <span class="badge bg-warning">Prescription</span>
+                            {% else %}
+                                <span class="badge bg-success">OTC</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if medicine.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'admin_medicine_edit' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'medicine_detail' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-info" title="View" target="_blank">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'admin_medicine_delete' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-danger" title="Delete"
+                                   onclick="return confirm('Are you sure you want to delete this medicine?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No medicines found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if medicines.has_other_pages %}
+        <nav aria-label="Medicines pagination">
+            <ul class="pagination justify-content-center">
+                {% if medicines.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in medicines.paginator.page_range %}
+                    {% if medicines.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > medicines.number|add:'-3' and num < medicines.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if medicines.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select all checkbox functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="medicine_ids"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});
+
+// Show/hide stock input based on action selection
+document.getElementById('action').addEventListener('change', function() {
+    const stockInput = document.getElementById('stockInput');
+    if (this.value === 'update_stock') {
+        stockInput.style.display = 'block';
+    } else {
+        stockInput.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

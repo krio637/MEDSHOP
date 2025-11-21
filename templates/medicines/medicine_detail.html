@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}{{ medicine.name }} - MedShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-6 mb-4 mb-md-0">
+        {% if medicine.image %}
+            <img src="{{ medicine.image.url }}" class="img-fluid rounded" alt="{{ medicine.name }}">
+        {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                <i class="fas fa-pills fa-5x text-muted"></i>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-12 col-md-6">
+        <h2 class="h3">{{ medicine.name }}</h2>
+        <p class="text-muted">by {{ medicine.manufacturer }}</p>
+        
+        {% if medicine.prescription_type == 'RX' %}
+            <span class="badge bg-warning mb-3">Prescription Required</span>
+        {% else %}
+            <span class="badge bg-success mb-3">Over the Counter</span>
+        {% endif %}
+        
+        <h3 class="text-primary">{{ medicine.price|rupees_simple }}</h3>
+        
+        <div class="mb-3">
+            <strong>Category:</strong> {{ medicine.category.name }}
+        </div>
+        
+        <div class="mb-3">
+            <strong>Stock:</strong> 
+            {% if medicine.stock_quantity > 0 %}
+                <span class="text-success">{{ medicine.stock_quantity }} available</span>
+            {% else %}
+                <span class="text-danger">Out of stock</span>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <strong>Expiry Date:</strong> {{ medicine.expiry_date }}
+        </div>
+        
+        <div class="mb-4">
+            <h5>Description</h5>
+            <p>{{ medicine.description }}</p>
+        </div>
+        
+        {% if user.is_authenticated and medicine.stock_quantity > 0 %}
+            <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-cart-plus"></i> Add to Cart
+            </a>
+        {% elif not user.is_authenticated %}
+            <div class="d-grid gap-2 d-md-flex">
+                <a href="{% url 'login' %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                </a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </a>
+            </div>
+        {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+        {% endif %}
+        
+        <a href="{% url 'medicine_list' %}" class="btn btn-outline-secondary btn-lg ms-2">
+            <i class="fas fa-arrow-left"></i> Back to Medicines
+        </a>
+    </div>
+</div>
+{% endblock %}

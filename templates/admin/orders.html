@@ -1,0 +1,224 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block page_title %}Manage Orders{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
+                       placeholder="Order ID, customer name, email">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    {% for status_code, status_name in status_choices %}
+                        <option value="{{ status_code }}" {% if status_code == status_filter %}selected{% endif %}>
+                            {{ status_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date" class="form-label">Date Range</label>
+                <select class="form-select" id="date" name="date">
+                    <option value="">All Time</option>
+                    <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                    <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                    <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_orders' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Order Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <strong>#{{ order.id }}</strong>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ order.user.first_name }} {{ order.user.last_name }}</div>
+                            <small class="text-muted">{{ order.user.email }}</small><br>
+                            <small class="text-muted">{{ order.phone_number }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ order.items.count }} item{{ order.items.count|pluralize }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ order.total_amount|rupees_simple }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if order.status == 'PENDING' %}bg-warning
+                                {% elif order.status == 'CONFIRMED' %}bg-info
+                                {% elif order.status == 'SHIPPED' %}bg-primary
+                                {% elif order.status == 'DELIVERED' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div>{{ order.created_at|date:"M d, Y" }}</div>
+                            <small class="text-muted">{{ order.created_at|time:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'admin_order_detail' order.id %}" 
+                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if order.status == 'PENDING' %}
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="updateOrderStatus({{ order.id }}, 'CONFIRMED')" title="Confirm Order">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% endif %}
+                                {% if order.status == 'CONFIRMED' %}
+                                <button class="btn btn-sm btn-outline-info" 
+                                        onclick="updateOrderStatus({{ order.id }}, 'SHIPPED')" title="Mark as Shipped">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </button>
+                                {% endif %}
+                                {% if order.status == 'SHIPPED' %}
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="updateOrderStatus({{ order.id }}, 'DELIVERED')" title="Mark as Delivered">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+        <nav aria-label="Orders pagination">
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ orders.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if orders.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ orders.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to update the order status?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusUpdate">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentOrderId = null;
+let currentStatus = null;
+
+function updateOrderStatus(orderId, status) {
+    currentOrderId = orderId;
+    currentStatus = status;
+    
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
+}
+
+document.getElementById('confirmStatusUpdate').addEventListener('click', function() {
+    if (currentOrderId && currentStatus) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin-order/${currentOrderId}/`;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken.value;
+            form.appendChild(csrfInput);
+        }
+        
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = currentStatus;
+        form.appendChild(statusInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
+{% endblock %}
