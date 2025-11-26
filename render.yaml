@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: tamraparni-ayurveda
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn medshop.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
