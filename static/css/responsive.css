@@ -368,31 +368,47 @@ footer h5 {
     margin-bottom: 1rem;
 }
 
-/* Fix flickering and overflow issues */
-html, body {
-    overflow-x: hidden;
+/* Fix flickering and overflow issues - CRITICAL */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden !important;
     width: 100%;
-    position: relative;
+    max-width: 100vw;
 }
 
 body {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
     margin: 0;
     padding: 0;
+    position: relative;
 }
 
 .container {
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
 }
 
 .row {
     margin-left: -12px;
     margin-right: -12px;
+    max-width: 100%;
 }
 
 .row > * {
     padding-left: 12px;
     padding-right: 12px;
+}
+
+/* Disable ALL animations globally */
+*, *::before, *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.1s !important;
 }
 
 /* Disable animations on mobile to prevent flickering */
@@ -1025,38 +1041,26 @@ a:hover {
 
 /* Enhanced Attractive Styling */
 
-/* Animated gradient background for hero */
+/* Static gradient background for hero - NO ANIMATION */
 .hero-section {
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
-    background-size: 200% 200%;
-    animation: gradientShift 15s ease infinite;
+    background-size: 100% 100%;
     position: relative;
     overflow: hidden;
 }
 
+/* Remove all animations */
 @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0%, 100% { background-position: 0% 50%; }
 }
 
-/* Floating particles effect */
+/* Disable floating particles */
 .hero-section::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-        radial-gradient(circle, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-    background-size: 50px 50px, 80px 80px;
-    background-position: 0 0, 40px 40px;
-    animation: particleFloat 20s linear infinite;
+    display: none;
 }
 
 @keyframes particleFloat {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-50px); }
+    0%, 100% { transform: translateY(0); }
 }
 
 /* Glowing text effect */
@@ -1071,32 +1075,18 @@ a:hover {
     50% { text-shadow: 0 0 30px rgba(139, 69, 19, 0.8), 0 0 50px rgba(139, 69, 19, 0.5); }
 }
 
-/* Enhanced card hover effects */
+/* Enhanced card hover effects - DISABLED */
 .medicine-card {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
 }
 
 .medicine-card::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
-    transform: rotate(45deg);
-    transition: all 0.6s;
-}
-
-.medicine-card:hover::after {
-    left: 100%;
+    display: none;
 }
 
 .medicine-card:hover {
-    transform: translateY(-15px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+    box-shadow: var(--shadow-md);
 }
 
 /* Category card pulse effect */
@@ -1123,19 +1113,14 @@ a:hover {
     transform: rotate(360deg) scale(1.1);
 }
 
-/* Stats counter animation */
+/* Stats counter - NO ANIMATION */
 .stats-counter {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 3s infinite;
+    color: #FFD700;
+    font-weight: 800;
 }
 
 @keyframes shimmer {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0%, 100% { background-position: 0% 50%; }
 }
 
 /* Testimonial card entrance */
@@ -1217,25 +1202,17 @@ a:hover {
     left: 100%;
 }
 
-/* Section divider animation */
+/* Section divider - NO ANIMATION */
 .bg-light {
     position: relative;
 }
 
 .bg-light::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #FFD700, transparent);
-    animation: dividerSlide 3s ease-in-out infinite;
+    display: none;
 }
 
 @keyframes dividerSlide {
-    0%, 100% { transform: translateX(-100%); }
-    50% { transform: translateX(100%); }
+    0%, 100% { transform: translateX(0); }
 }
 
 /* Smooth scroll behavior */
