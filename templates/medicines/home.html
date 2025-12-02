@@ -8,33 +8,33 @@
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <h1 class="display-4 mb-4">
-                    Welcome to <span class="text-warning">MedShop</span>
+                    Welcome to <span style="color: #8B4513;">Tamraparni Ayurveda</span>
                 </h1>
                 <p class="lead mb-4">
-                    Your trusted online pharmacy for quality medicines. Fast delivery, genuine products, and expert care at your fingertips.
+                    Your trusted source for authentic Ayurvedic medicines and wellness products. Natural healing, traditional wisdom, and holistic care.
                 </p>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'medicine_list' %}" class="btn btn-warning btn-lg me-3">
-                        <i class="fas fa-shopping-bag me-2"></i>Shop Now
+                    <a href="{% url 'medicine_list' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-leaf me-2"></i>Shop Now
                     </a>
                 {% else %}
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="{% url 'medicine_list' %}" class="btn btn-warning btn-lg">
-                            <i class="fas fa-pills me-2"></i>Browse Medicines
+                        <a href="{% url 'medicine_list' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-leaf me-2"></i>Browse Products
                         </a>
                         <a href="{% url 'signup' %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-user-plus me-2"></i>Join Now
                         </a>
                     </div>
                     <p class="mt-3 opacity-75 d-none d-sm-block">
-                        <i class="fas fa-shield-alt me-2"></i>
-                        Secure ordering • Fast delivery • Genuine medicines
+                        <i class="fas fa-leaf me-2"></i>
+                        100% Natural • Authentic Ayurvedic • Expert Consultation
                     </p>
                 {% endif %}
             </div>
             <div class="col-lg-6 text-center d-none d-lg-block">
                 <div class="hero-image">
-                    <i class="fas fa-heartbeat" style="font-size: 8rem; opacity: 0.3; color: #fbbf24;"></i>
+                    <i class="fas fa-spa" style="font-size: 8rem; opacity: 0.3; color: #FFD700;"></i>
                 </div>
             </div>
         </div>
@@ -45,18 +45,18 @@
 <div class="container my-5">
     <div class="row text-center mb-5">
         <div class="col-12">
-            <h2 class="gradient-text mb-3">Why Choose MedShop?</h2>
-            <p class="text-muted">Experience the best in online pharmacy services</p>
+            <h2 class="gradient-text mb-3">Why Choose Tamraparni Ayurveda?</h2>
+            <p class="text-muted">Experience authentic Ayurvedic healing and wellness</p>
         </div>
     </div>
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="text-center">
                 <div class="feature-icon">
-                    <i class="fas fa-shipping-fast"></i>
+                    <i class="fas fa-leaf"></i>
                 </div>
-                <h5>Fast Delivery</h5>
-                <p class="text-muted">Get your medicines delivered within 24 hours across India</p>
+                <h5>100% Natural</h5>
+                <p class="text-muted">Pure Ayurvedic formulations from traditional recipes</p>
             </div>
         </div>
         <div class="col-md-4 mb-4">
@@ -64,17 +64,17 @@
                 <div class="feature-icon">
                     <i class="fas fa-certificate"></i>
                 </div>
-                <h5>Genuine Products</h5>
-                <p class="text-muted">100% authentic medicines from licensed manufacturers</p>
+                <h5>Authentic Products</h5>
+                <p class="text-muted">Certified Ayurvedic medicines from trusted sources</p>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="text-center">
                 <div class="feature-icon">
-                    <i class="fas fa-user-md"></i>
+                    <i class="fas fa-hands-helping"></i>
                 </div>
-                <h5>Expert Support</h5>
-                <p class="text-muted">24/7 pharmacist consultation and customer support</p>
+                <h5>Expert Guidance</h5>
+                <p class="text-muted">Ayurvedic consultation and personalized wellness support</p>
             </div>
         </div>
     </div>
@@ -206,7 +206,7 @@
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="testimonial-card">
-                <p class="mb-3">"Fast delivery and genuine medicines. MedShop has become my go-to pharmacy for all medical needs."</p>
+                <p class="mb-3">"Excellent Ayurvedic products and authentic formulations. Tamraparni Ayurveda has transformed my health naturally."</p>
                 <div class="d-flex align-items-center">
                     <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                         <i class="fas fa-user text-white"></i>
@@ -220,7 +220,7 @@
         </div>
         <div class="col-md-4 mb-4">
             <div class="testimonial-card">
-                <p class="mb-3">"Excellent service and competitive prices. The pharmacist consultation feature is really helpful."</p>
+                <p class="mb-3">"Traditional wisdom meets modern convenience. The Ayurvedic consultation helped me find the right remedies."</p>
                 <div class="d-flex align-items-center">
                     <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                         <i class="fas fa-user text-white"></i>
@@ -234,7 +234,7 @@
         </div>
         <div class="col-md-4 mb-4">
             <div class="testimonial-card">
-                <p class="mb-3">"Reliable and trustworthy. I've been ordering from MedShop for over a year now. Highly recommended!"</p>
+                <p class="mb-3">"Pure and effective Ayurvedic medicines. I trust Tamraparni Ayurveda for my family's wellness needs."</p>
                 <div class="d-flex align-items-center">
                     <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                         <i class="fas fa-user text-white"></i>
@@ -252,18 +252,18 @@
 <!-- Call to Action -->
 <div class="bg-primary text-white py-5">
     <div class="container text-center">
-        <h3 class="mb-3">Ready to Experience Better Healthcare?</h3>
-        <p class="lead mb-4">Join thousands of satisfied customers who trust MedShop for their medical needs</p>
+        <h3 class="mb-3">Ready to Experience Natural Healing?</h3>
+        <p class="lead mb-4">Join thousands who trust Tamraparni Ayurveda for holistic wellness</p>
         {% if not user.is_authenticated %}
-            <a href="{% url 'signup' %}" class="btn btn-warning btn-lg me-3">
+            <a href="{% url 'signup' %}" class="btn btn-light btn-lg me-3">
                 <i class="fas fa-user-plus me-2"></i>Sign Up Now
             </a>
             <a href="{% url 'medicine_list' %}" class="btn btn-outline-light btn-lg">
-                <i class="fas fa-pills me-2"></i>Browse Medicines
+                <i class="fas fa-leaf me-2"></i>Browse Products
             </a>
         {% else %}
-            <a href="{% url 'medicine_list' %}" class="btn btn-warning btn-lg">
-                <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+            <a href="{% url 'medicine_list' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-spa me-2"></i>Start Shopping
             </a>
         {% endif %}
     </div>
