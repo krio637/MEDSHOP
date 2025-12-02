@@ -1,26 +1,26 @@
 /* Custom Responsive Styles for MedShop */
 
-/* Mobile First Approach - Green Theme */
+/* Mobile First Approach - Gold Theme */
 :root {
-    --primary-color: #059669;
-    --primary-dark: #047857;
-    --primary-light: #10b981;
+    --primary-color: #FFD700;
+    --primary-dark: #DAA520;
+    --primary-light: #FFEC8B;
     --secondary-color: #6b7280;
     --success-color: #22c55e;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
-    --light-color: #f0fdf4;
+    --light-color: #FFFEF0;
     --dark-color: #1f2937;
-    --gradient-primary: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    --gradient-secondary: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    --gradient-primary: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    --gradient-secondary: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
     --gradient-success: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    --gradient-light: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    --gradient-light: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --shadow-green: 0 4px 14px 0 rgba(5, 150, 105, 0.15);
+    --shadow-gold: 0 4px 14px 0 rgba(255, 215, 0, 0.25);
 }
 
 /* Base styles */
@@ -28,7 +28,7 @@ body {
     font-size: 14px;
     line-height: 1.6;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
     min-height: 100vh;
 }
 
@@ -82,26 +82,26 @@ html {
 .navbar {
     background: var(--gradient-primary) !important;
     backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-green);
+    box-shadow: var(--shadow-gold);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: 700;
-    color: white !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #1f2937 !important;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
     transition: all 0.3s ease;
 }
 
 .navbar-brand:hover {
     transform: scale(1.05);
-    color: #a7f3d0 !important;
+    color: #8B4513 !important;
 }
 
 .navbar-nav .nav-link {
     padding: 0.5rem 1rem;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: #1f2937 !important;
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
@@ -109,8 +109,8 @@ html {
 }
 
 .navbar-nav .nav-link:hover {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.1);
+    color: #8B4513 !important;
+    background: rgba(139, 69, 19, 0.1);
     transform: translateY(-2px);
 }
 
@@ -121,7 +121,7 @@ html {
     left: 50%;
     width: 0;
     height: 2px;
-    background: #a7f3d0;
+    background: #8B4513;
     transition: all 0.3s ease;
     transform: translateX(-50%);
 }
@@ -165,7 +165,7 @@ html {
 
 .card:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-green);
+    box-shadow: var(--shadow-gold);
 }
 
 .card:hover::before {
@@ -183,8 +183,8 @@ html {
 
 /* Medicine cards special styling */
 .medicine-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
-    border: 1px solid rgba(5, 150, 105, 0.1);
+    background: linear-gradient(145deg, #ffffff 0%, #FFFEF0 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .medicine-card .card-body {
@@ -248,7 +248,7 @@ html {
 
 .btn-success:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-green);
+    box-shadow: var(--shadow-gold);
 }
 
 .btn-outline-primary {
@@ -648,7 +648,7 @@ html {
     padding: 2rem 1rem;
     text-align: center;
     transition: all 0.3s ease;
-    border: 1px solid rgba(5, 150, 105, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -671,7 +671,7 @@ html {
 
 .category-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-green);
+    box-shadow: var(--shadow-gold);
 }
 
 .category-card .category-icon {
@@ -751,7 +751,7 @@ footer::before {
 }
 
 footer h5 {
-    color: #a7f3d0;
+    color: #FFD700;
     font-weight: 600;
 }
 
@@ -865,12 +865,12 @@ rap Override - Force Green Theme */
 
 .navbar-dark .navbar-brand,
 .navbar-dark .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: #1f2937 !important;
 }
 
 .navbar-dark .navbar-brand:hover,
 .navbar-dark .navbar-nav .nav-link:hover {
-    color: #a7f3d0 !important;
+    color: #8B4513 !important;
 }
 
 /* Force green for all primary elements */
