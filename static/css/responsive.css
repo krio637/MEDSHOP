@@ -881,3 +881,15 @@ a {
 a:hover {
     color: var(--primary-dark);
 }
+
+/* Cart Badge Styling */
+.nav-link .badge {
+    font-size: 0.65rem;
+    padding: 0.25em 0.5em;
+    font-weight: 700;
+}
+
+.nav-link.position-relative {
+    display: inline-flex;
+    align-items: center;
+}
