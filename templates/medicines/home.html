@@ -44,12 +44,12 @@
 <!-- 2. Featured Medicines -->
 <div class="container my-5">
     <div class="row">
-        <div class="col-md-12">
-            <h2>Featured Medicines</h2>
-            <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Featured Medicines</h2>
+            <div class="row g-3">
                 {% for medicine in featured_medicines %}
-                <div class="col-6 col-md-4 col-lg-3 mb-4">
-                    <div class="card medicine-card h-100 animate-fade-in">
+                <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
+                    <div class="card medicine-card h-100">
                         {% if medicine.image %}
                             <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 180px; object-fit: cover;">
                         {% else %}
