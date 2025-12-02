@@ -2,7 +2,7 @@
 {% load currency_filters %}
 
 {% block content %}
-<!-- Hero Section -->
+<!-- 1. Hero Section -->
 <div class="hero-section">
     <div class="container">
         <div class="row align-items-center">
@@ -41,7 +41,104 @@
     </div>
 </div>
 
-<!-- Features Section -->
+<!-- 2. Featured Medicines -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Featured Medicines</h2>
+            <div class="row">
+                {% for medicine in featured_medicines %}
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="card medicine-card h-100 animate-fade-in">
+                        {% if medicine.image %}
+                            <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 180px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-gradient-to-br from-gold-50 to-gold-100 d-flex align-items-center justify-content-center" style="height: 180px; background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);">
+                                <i class="fas fa-leaf fa-3x" style="color: var(--primary-color); opacity: 0.7;"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ medicine.name }}</h6>
+                                {% if medicine.prescription_type == 'RX' %}
+                                    <span class="badge bg-warning">Rx</span>
+                                {% else %}
+                                    <span class="badge bg-success">OTC</span>
+                                {% endif %}
+                            </div>
+                            <p class="card-text small text-muted mb-2">{{ medicine.manufacturer }}</p>
+                            <p class="card-text small d-none d-md-block mb-3">{{ medicine.description|truncatewords:8 }}</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="price-tag-small">{{ medicine.price|rupees_simple }}</span>
+                                    <small class="text-muted">
+                                        {% if medicine.stock_quantity > 10 %}
+                                            <i class="fas fa-check-circle text-success"></i> In Stock
+                                        {% elif medicine.stock_quantity > 0 %}
+                                            <i class="fas fa-exclamation-triangle text-warning"></i> Low Stock
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-danger"></i> Out of Stock
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'medicine_detail' medicine.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                    {% if user.is_authenticated and medicine.stock_quantity > 0 %}
+                                        <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Shop by Category -->
+<div class="container mb-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Shop by Category</h2>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="category-card animate-fade-in">
+                        <div class="category-icon">
+                            {% if 'Pain' in category.name %}
+                                <i class="fas fa-band-aid"></i>
+                            {% elif 'Cold' in category.name %}
+                                <i class="fas fa-thermometer-half"></i>
+                            {% elif 'Digestive' in category.name %}
+                                <i class="fas fa-stomach"></i>
+                            {% elif 'Vitamin' in category.name %}
+                                <i class="fas fa-leaf"></i>
+                            {% elif 'First Aid' in category.name %}
+                                <i class="fas fa-first-aid"></i>
+                            {% else %}
+                                <i class="fas fa-pills"></i>
+                            {% endif %}
+                        </div>
+                        <h6 class="fw-bold mb-2">{{ category.name }}</h6>
+                        <p class="text-muted small mb-3">{{ category.description|truncatewords:8 }}</p>
+                        <a href="{% url 'medicine_list' %}?category={{ category.id }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right me-1"></i>Browse
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Why Choose Section -->
 <div class="container my-5">
     <div class="row text-center mb-5">
         <div class="col-12">
@@ -80,98 +177,7 @@
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h2>Shop by Category</h2>
-        <div class="row">
-            {% for category in categories %}
-            <div class="col-6 col-md-3 mb-4">
-                <div class="category-card animate-fade-in">
-                    <div class="category-icon">
-                        {% if 'Pain' in category.name %}
-                            <i class="fas fa-band-aid"></i>
-                        {% elif 'Cold' in category.name %}
-                            <i class="fas fa-thermometer-half"></i>
-                        {% elif 'Digestive' in category.name %}
-                            <i class="fas fa-stomach"></i>
-                        {% elif 'Vitamin' in category.name %}
-                            <i class="fas fa-leaf"></i>
-                        {% elif 'First Aid' in category.name %}
-                            <i class="fas fa-first-aid"></i>
-                        {% else %}
-                            <i class="fas fa-pills"></i>
-                        {% endif %}
-                    </div>
-                    <h6 class="fw-bold mb-2">{{ category.name }}</h6>
-                    <p class="text-muted small mb-3">{{ category.description|truncatewords:8 }}</p>
-                    <a href="{% url 'medicine_list' %}?category={{ category.id }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-arrow-right me-1"></i>Browse
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <h2>Featured Medicines</h2>
-        <div class="row">
-            {% for medicine in featured_medicines %}
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <div class="card medicine-card h-100 animate-fade-in">
-                    {% if medicine.image %}
-                        <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 180px; object-fit: cover;">
-                    {% else %}
-                        <div class="card-img-top bg-gradient-to-br from-blue-50 to-indigo-100 d-flex align-items-center justify-content-center" style="height: 180px; background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);">
-                            <i class="fas fa-pills fa-3x" style="color: var(--primary-color); opacity: 0.7;"></i>
-                        </div>
-                    {% endif %}
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title mb-0">{{ medicine.name }}</h6>
-                            {% if medicine.prescription_type == 'RX' %}
-                                <span class="badge bg-warning">Rx</span>
-                            {% else %}
-                                <span class="badge bg-success">OTC</span>
-                            {% endif %}
-                        </div>
-                        <p class="card-text small text-muted mb-2">{{ medicine.manufacturer }}</p>
-                        <p class="card-text small d-none d-md-block mb-3">{{ medicine.description|truncatewords:8 }}</p>
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="price-tag-small">{{ medicine.price|rupees_simple }}</span>
-                                <small class="text-muted">
-                                    {% if medicine.stock_quantity > 10 %}
-                                        <i class="fas fa-check-circle text-success"></i> In Stock
-                                    {% elif medicine.stock_quantity > 0 %}
-                                        <i class="fas fa-exclamation-triangle text-warning"></i> Low Stock
-                                    {% else %}
-                                        <i class="fas fa-times-circle text-danger"></i> Out of Stock
-                                    {% endif %}
-                                </small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'medicine_detail' medicine.pk %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i>View Details
-                                </a>
-                                {% if user.is_authenticated and medicine.stock_quantity > 0 %}
-                                    <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-cart-plus me-1"></i>Add to Cart
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- Statistics Section -->
+<!-- 5. Statistics Section -->
 <div class="bg-light py-5">
     <div class="container">
         <div class="row text-center">
@@ -195,7 +201,7 @@
     </div>
 </div>
 
-<!-- Testimonials Section -->
+<!-- 6. Testimonials Section -->
 <div class="container my-5">
     <div class="row">
         <div class="col-12 text-center mb-5">
@@ -249,7 +255,7 @@
     </div>
 </div>
 
-<!-- Call to Action -->
+<!-- 7. Call to Action -->
 <div class="bg-primary text-white py-5">
     <div class="container text-center">
         <h3 class="mb-3">Ready to Experience Natural Healing?</h3>
