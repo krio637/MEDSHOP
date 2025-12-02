@@ -46,58 +46,58 @@
     <div class="row">
         <div class="col-12">
             <h2 class="mb-4">Featured Medicines</h2>
-            <div class="row g-3">
-                {% for medicine in featured_medicines %}
-                <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
-                    <div class="card medicine-card h-100">
-                        {% if medicine.image %}
-                            <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 180px; object-fit: cover;">
-                        {% else %}
-                            <div class="card-img-top bg-gradient-to-br from-gold-50 to-gold-100 d-flex align-items-center justify-content-center" style="height: 180px; background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);">
-                                <i class="fas fa-leaf fa-3x" style="color: var(--primary-color); opacity: 0.7;"></i>
-                            </div>
-                        {% endif %}
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="card-title mb-0">{{ medicine.name }}</h6>
-                                {% if medicine.prescription_type == 'RX' %}
-                                    <span class="badge bg-warning">Rx</span>
-                                {% else %}
-                                    <span class="badge bg-success">OTC</span>
-                                {% endif %}
-                            </div>
-                            <p class="card-text small text-muted mb-2">{{ medicine.manufacturer }}</p>
-                            <p class="card-text small d-none d-md-block mb-3">{{ medicine.description|truncatewords:8 }}</p>
-                            <div class="mt-auto">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="price-tag-small">{{ medicine.price|rupees_simple }}</span>
-                                    <small class="text-muted">
-                                        {% if medicine.stock_quantity > 10 %}
-                                            <i class="fas fa-check-circle text-success"></i> In Stock
-                                        {% elif medicine.stock_quantity > 0 %}
-                                            <i class="fas fa-exclamation-triangle text-warning"></i> Low Stock
-                                        {% else %}
-                                            <i class="fas fa-times-circle text-danger"></i> Out of Stock
-                                        {% endif %}
-                                    </small>
-                                </div>
-                                <div class="d-grid gap-2">
-                                    <a href="{% url 'medicine_detail' medicine.pk %}" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-eye me-1"></i>View Details
-                                    </a>
-                                    {% if user.is_authenticated and medicine.stock_quantity > 0 %}
-                                        <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-cart-plus me-1"></i>Add to Cart
-                                        </a>
+        </div>
+    </div>
+    <div class="row g-2 g-md-3">
+        {% for medicine in featured_medicines %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card medicine-card h-100">
+                    {% if medicine.image %}
+                        <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-gradient-to-br from-gold-50 to-gold-100 d-flex align-items-center justify-content-center" style="height: 150px; background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);">
+                            <i class="fas fa-leaf fa-2x" style="color: var(--primary-color); opacity: 0.7;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column p-2 p-md-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0 small">{{ medicine.name }}</h6>
+                            {% if medicine.prescription_type == 'RX' %}
+                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">Rx</span>
+                            {% else %}
+                                <span class="badge bg-success" style="font-size: 0.65rem;">OTC</span>
+                            {% endif %}
+                        </div>
+                        <p class="card-text small text-muted mb-1" style="font-size: 0.75rem;">{{ medicine.manufacturer }}</p>
+                        <p class="card-text small d-none d-lg-block mb-2" style="font-size: 0.75rem;">{{ medicine.description|truncatewords:6 }}</p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-primary" style="font-size: 0.9rem;">{{ medicine.price|rupees_simple }}</span>
+                                <small class="text-muted" style="font-size: 0.65rem;">
+                                    {% if medicine.stock_quantity > 10 %}
+                                        <i class="fas fa-check-circle text-success"></i> <span class="d-none d-md-inline">In Stock</span>
+                                    {% elif medicine.stock_quantity > 0 %}
+                                        <i class="fas fa-exclamation-triangle text-warning"></i> <span class="d-none d-md-inline">Low</span>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i> <span class="d-none d-md-inline">Out</span>
                                     {% endif %}
-                                </div>
+                                </small>
+                            </div>
+                            <div class="d-grid gap-1">
+                                <a href="{% url 'medicine_detail' medicine.pk %}" class="btn btn-outline-primary btn-sm" style="font-size: 0.75rem; padding: 0.375rem 0.5rem;">
+                                    <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View</span>
+                                </a>
+                                {% if user.is_authenticated and medicine.stock_quantity > 0 %}
+                                    <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 0.375rem 0.5rem;">
+                                        <i class="fas fa-cart-plus"></i> <span class="d-none d-md-inline">Add to Cart</span>
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 

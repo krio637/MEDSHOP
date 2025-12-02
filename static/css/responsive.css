@@ -467,29 +467,40 @@ body {
     }
     
     .container {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 10px;
+        padding-right: 10px;
         max-width: 100%;
     }
     
     /* Fix medicine cards on mobile */
     .medicine-card {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0;
         transform: none !important;
+        font-size: 0.875rem;
     }
     
     .medicine-card .card-body {
-        padding: 0.75rem;
+        padding: 0.5rem !important;
     }
     
     .medicine-card .card-title {
-        font-size: 0.875rem;
-        line-height: 1.3;
+        font-size: 0.75rem !important;
+        line-height: 1.2;
     }
     
     .medicine-card .card-img-top {
-        height: 140px !important;
+        height: 120px !important;
         transform: none !important;
+    }
+    
+    .medicine-card .btn {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .medicine-card .badge {
+        font-size: 0.6rem !important;
+        padding: 0.2rem 0.4rem !important;
     }
     
     /* Prevent horizontal scroll */
