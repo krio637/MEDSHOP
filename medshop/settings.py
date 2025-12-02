@@ -162,3 +162,9 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# Email Configuration for Password Reset
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+DEFAULT_FROM_EMAIL = 'noreply@tamraparniayurveda.com'
