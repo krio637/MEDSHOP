@@ -26,6 +26,8 @@
             padding: 0.75rem 0;
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1050;
         }
         .navbar-brand {
             font-weight: 700;
@@ -74,15 +76,20 @@
         /* Profile Dropdown */
         .navbar .dropdown-menu {
             position: absolute !important;
-            z-index: 9999 !important;
+            z-index: 99999 !important;
             min-width: 240px;
             background: white !important;
             border: none;
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: visible;
             padding: 0;
             margin-top: 10px;
+            top: 100% !important;
+            right: 0 !important;
+        }
+        .nav-item.dropdown {
+            position: relative;
         }
         .navbar .dropdown-item {
             padding: 0.75rem 1.25rem;
