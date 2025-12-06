@@ -77,6 +77,17 @@
     border-radius: 0.25rem;
 }
 
+/* Ensure dropdown container allows hover */
+.nav-item.dropdown {
+    position: relative;
+}
+
+.nav-item.dropdown:hover .google-style-dropdown {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
 .profile-avatar-small {
     display: flex;
     align-items: center;
@@ -91,6 +102,16 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
     border: none !important;
     margin-top: 8px !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.google-style-dropdown.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
 }
 
 .dropdown-profile-header {

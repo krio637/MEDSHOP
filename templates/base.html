@@ -101,7 +101,7 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link btn btn-link px-2 dropdown-toggle" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none; padding: 0; color: white !important;">
+                            <button class="nav-link btn btn-link px-2" id="profileDropdown" type="button" aria-expanded="false" style="border: none; background: none; padding: 0; color: white !important;">
                                 <div class="profile-avatar-small">
                                     <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
                                 </div>
@@ -308,24 +308,44 @@
     
     <!-- Custom JavaScript for enhanced UX -->
     <script>
-        // Profile dropdown functionality - Google-style
+        // Profile dropdown functionality - Hover to open (Google-style)
         document.addEventListener('DOMContentLoaded', function() {
             const profileDropdown = document.getElementById('profileDropdown');
             const dropdownMenu = profileDropdown ? profileDropdown.nextElementSibling : null;
+            const dropdownContainer = profileDropdown ? profileDropdown.closest('.nav-item.dropdown') : null;
+            let hideTimeout;
             
-            if (profileDropdown && dropdownMenu) {
-                // Initialize Bootstrap dropdown
-                const dropdown = new bootstrap.Dropdown(profileDropdown, {
-                    offset: [0, 8]
+            if (profileDropdown && dropdownMenu && dropdownContainer) {
+                // Show dropdown on hover over button or container
+                function showDropdown() {
+                    clearTimeout(hideTimeout);
+                    dropdownMenu.classList.add('show');
+                }
+                
+                // Hide dropdown with slight delay
+                function hideDropdown() {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = setTimeout(function() {
+                        dropdownMenu.classList.remove('show');
+                    }, 150);
+                }
+                
+                // Hover events on container (button + dropdown area)
+                dropdownContainer.addEventListener('mouseenter', showDropdown);
+                dropdownContainer.addEventListener('mouseleave', hideDropdown);
+                
+                // Also support click for mobile/touch devices
+                profileDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearTimeout(hideTimeout);
+                    dropdownMenu.classList.toggle('show');
                 });
                 
-                // Ensure dropdown closes when clicking outside
+                // Close dropdown when clicking outside
                 document.addEventListener('click', function(e) {
-                    if (profileDropdown && dropdownMenu) {
-                        const isClickInside = profileDropdown.contains(e.target) || dropdownMenu.contains(e.target);
-                        if (!isClickInside && dropdownMenu.classList.contains('show')) {
-                            dropdown.hide();
-                        }
+                    if (!dropdownContainer.contains(e.target) && dropdownMenu.classList.contains('show')) {
+                        dropdownMenu.classList.remove('show');
                     }
                 });
             }
