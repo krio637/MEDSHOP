@@ -1565,57 +1565,74 @@ footer::before {
 
 
 /* Fix navbar dropdown */
+.navbar-nav {
+    align-items: center;
+}
+
+.navbar-nav .nav-item {
+    position: relative;
+}
+
+.navbar-nav .dropdown {
+    position: relative;
+}
+
 .navbar-nav .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: auto;
-    z-index: 1050;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 1050 !important;
     min-width: 200px;
     background: white;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin-top: 0.5rem;
+    margin-top: 0.5rem !important;
+    transform: translateY(0) !important;
 }
 
 .navbar-nav .dropdown-menu.show {
-    display: block;
+    display: block !important;
 }
 
 .navbar-nav .dropdown-item {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.25rem;
     color: #333;
     transition: all 0.2s ease;
+    display: block;
+    width: 100%;
+    clear: both;
+    font-weight: 400;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
 }
 
-.navbar-nav .dropdown-item:hover {
+.navbar-nav .dropdown-item:hover,
+.navbar-nav .dropdown-item:focus {
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: white;
+    color: white !important;
+}
+
+.navbar-nav .dropdown-item i {
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
 }
 
 .navbar-nav .dropdown-toggle::after {
     margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.navbar-nav .dropdown-divider {
+    margin: 0.5rem 0;
 }
 
 /* Ensure dropdown works on mobile */
 @media (max-width: 991.98px) {
     .navbar-nav .dropdown-menu {
-        position: static;
-        float: none;
-        width: 100%;
-        margin-top: 0;
-        border: none;
-        box-shadow: none;
-        background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .navbar-nav .dropdown-item {
-        color: #1f2937;
-    }
-    
-    .navbar-nav .dropdown-item:hover {
-        background: rgba(139, 69, 19, 0.1);
-        color: #8B4513;
-    }
-}
+        position: static !important;
+        float: 

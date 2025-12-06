@@ -17,6 +17,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static %}
     <link href="{% static 'css/responsive.css' %}?v=6.0" rel="stylesheet">
+    <link href="{% static 'css/dropdown-fix.css' %}?v=1.0" rel="stylesheet">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"
@@ -242,12 +243,26 @@
     
     <!-- Custom JavaScript for enhanced UX -->
     <script>
-        // Initialize Bootstrap dropdowns
+        // Fix dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
+            // Initialize all dropdowns
+            const dropdownToggle = document.getElementById('navbarDropdown');
+            const dropdownMenu = dropdownToggle ? dropdownToggle.nextElementSibling : null;
+            
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
         });
     </script>
     <script></script>
