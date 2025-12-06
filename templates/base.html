@@ -19,20 +19,26 @@
     <link href="{% static 'css/responsive.css' %}?v=6.0" rel="stylesheet">
     <link href="{% static 'css/dropdown-fix.css' %}?v=1.0" rel="stylesheet">
     
-    <!-- Google-style dropdown styles -->
+    <!-- Profile dropdown styles -->
     <style>
-        /* Ensure dropdown shows when active */
-        .dropdown-menu.show {
-            display: block !important;
+        .navbar .dropdown-menu {
+            position: absolute !important;
+            z-index: 9999 !important;
+            min-width: 220px;
+            background: white !important;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            overflow: hidden;
         }
-        
-        /* Override default Bootstrap dropdown styles for Google-style */
-        .google-style-dropdown {
-            display: none;
+        .navbar .dropdown-item:hover {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+            color: white !important;
         }
-        
-        .google-style-dropdown.show {
-            display: block !important;
+        #profileDropdown::after {
+            display: none !important;
+        }
+        .dropdown-menu .text-center.py-3 {
+            background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
         }
     </style>
     
@@ -101,33 +107,20 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link btn btn-link px-2" id="profileDropdown" type="button" aria-expanded="false" style="border: none; background: none; padding: 0; color: white !important;">
-                                <div class="profile-avatar-small">
-                                    <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
-                                </div>
+                            <button class="nav-link dropdown-toggle px-2" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none;">
+                                <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end simple-profile-dropdown" aria-labelledby="profileDropdown">
-                                <li class="dropdown-profile-header">
-                                    <div class="text-center py-3">
-                                        <div class="profile-avatar-simple mb-2">
-                                            <div class="avatar-inner"></div>
-                                        </div>
-                                        <div class="fw-bold text-dark mb-1">{{ user.username }}</div>
-                                        <div class="text-muted small">
-                                            {% if user.is_staff %}
-                                                Admin
-                                            {% else %}
-                                                Customer
-                                            {% endif %}
-                                        </div>
-                                    </div>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li class="text-center py-3 px-3">
+                                    <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
+                                    <div class="fw-bold">{{ user.username }}</div>
+                                    <small class="text-muted">{{ user.email|default:"" }}</small>
                                 </li>
-                                <li><hr class="dropdown-divider my-0"></li>
-                                <li class="px-3 py-2">
-                                    <a href="{% url 'profile' %}" class="btn btn-primary w-100 simple-profile-btn">
-                                        View Profile
-                                    </a>
-                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'order_history' %}"><i class="fas fa-history me-2"></i>Order History</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
