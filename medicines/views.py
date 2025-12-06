@@ -179,8 +179,11 @@ def signup_view(request):
         if form.is_valid():
             user = form.save()
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! You can now log in.')
+            messages.success(request, f'Account created successfully for {username}! Please log in.')
             return redirect('login')
+        else:
+            # Add error message if form is invalid
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = SignUpForm()
     
@@ -192,8 +195,13 @@ def login_view(request):
         return redirect('home')
     
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        
+        if not username or not password:
+            messages.error(request, 'Please provide both username and password.')
+            return render(request, 'registration/login.html')
+        
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
@@ -202,7 +210,7 @@ def login_view(request):
             messages.success(request, f'Welcome back, {user.first_name or user.username}!')
             return redirect(next_url)
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Invalid username or password. Please try again.')
     
     return render(request, 'registration/login.html')
 
