@@ -177,12 +177,15 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created successfully for {username}! Please log in.')
-            return redirect('login')
+            try:
+                user = form.save()
+                username = form.cleaned_data.get('username')
+                messages.success(request, f'Account created successfully for {username}! Please log in.')
+                return redirect('login')
+            except Exception as e:
+                messages.error(request, f'An error occurred while creating your account: {str(e)}')
         else:
-            # Add error message if form is invalid
+            # Form validation errors will be displayed in the template
             messages.error(request, 'Please correct the errors below.')
     else:
         form = SignUpForm()
@@ -195,7 +198,7 @@ def login_view(request):
         return redirect('home')
     
     if request.method == 'POST':
-        username = request.POST.get('username', '')
+        username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
         
         if not username or not password:
@@ -205,10 +208,19 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            login(request, user)
-            next_url = request.GET.get('next', 'home')
-            messages.success(request, f'Welcome back, {user.first_name or user.username}!')
-            return redirect(next_url)
+            if user.is_active:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+                next_url = request.GET.get('next', 'home')
+                # Handle both URL names and full paths
+                if next_url and next_url.startswith('/'):
+                    return redirect(next_url)
+                elif next_url and next_url != 'home':
+                    return redirect(next_url)
+                else:
+                    return redirect('home')
+            else:
+                messages.error(request, 'Your account has been disabled. Please contact support.')
         else:
             messages.error(request, 'Invalid username or password. Please try again.')
     

@@ -28,7 +28,7 @@
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
+                            <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username" autofocus autocomplete="username">
                         </div>
                     </div>
 
@@ -36,10 +36,10 @@
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                            <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
                         </div>
                         <div class="text-end mt-2">
-                            <a href="{% url 'password_reset' %}" class="text-muted small">
+                            <a href="/accounts/password_reset/" class="text-muted small">
                                 <i class="fas fa-key"></i> Forgot Password?
                             </a>
                         </div>

@@ -116,20 +116,32 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-2" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user"></i> <span class="d-none d-lg-inline">{{ user.first_name|default:user.username }}</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">
-                                    <i class="fas fa-user"></i> My Profile
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'order_history' %}">
-                                    <i class="fas fa-history"></i> Order History
-                                </a></li>
+                            <button class="nav-link btn btn-link px-2 dropdown-toggle" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none; padding: 0; color: white !important;">
+                                <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        <i class="fas fa-user me-2"></i>{{ user.get_full_name|default:user.username }}
+                                    </h6>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="fas fa-user me-2"></i>My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'order_history' %}">
+                                        <i class="fas fa-history me-2"></i>Order History
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     {% else %}
@@ -159,7 +171,7 @@
         </div>
     </nav>
 
-    <main class="container mt-4">
+    <main class="container my-4">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -275,23 +287,18 @@
     
     <!-- Custom JavaScript for enhanced UX -->
     <script>
-        // Fix dropdown functionality
+        // Profile dropdown functionality - Bootstrap 5 handles this automatically
+        // This ensures proper initialization and cleanup
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all dropdowns
-            const dropdownToggle = document.getElementById('navbarDropdown');
-            const dropdownMenu = dropdownToggle ? dropdownToggle.nextElementSibling : null;
-            
-            if (dropdownToggle && dropdownMenu) {
-                dropdownToggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('show');
-                });
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) {
+                // Initialize Bootstrap dropdown
+                const dropdown = new bootstrap.Dropdown(profileDropdown);
                 
-                // Close dropdown when clicking outside
+                // Ensure dropdown closes when clicking outside (Bootstrap handles this, but we ensure it works)
                 document.addEventListener('click', function(e) {
-                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.classList.remove('show');
+                    if (!profileDropdown.contains(e.target) && !profileDropdown.nextElementSibling.contains(e.target)) {
+                        dropdown.hide();
                     }
                 });
             }

@@ -8,13 +8,14 @@
     top: 100% !important;
     right: 0 !important;
     left: auto !important;
-    z-index: 9999 !important;
-    min-width: 200px;
+    z-index: 1050 !important;
+    min-width: 220px;
     background: white !important;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     margin-top: 0.5rem;
+    padding: 0.5rem 0;
     display: none;
 }
 
@@ -28,14 +29,50 @@
     display: block;
     width: 100%;
     text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    text-align: left;
 }
 
-.navbar-nav .dropdown-item:hover {
+.navbar-nav .dropdown-item:hover,
+.navbar-nav .dropdown-item:focus {
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
     color: white !important;
+}
+
+.navbar-nav .dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.navbar-nav .dropdown-header {
+    padding: 0.5rem 1.25rem;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.navbar-nav .dropdown-header i {
+    margin-right: 0.5rem;
 }
 
 .navbar-nav .dropdown-divider {
     margin: 0.5rem 0;
     border-top: 1px solid #e0e0e0;
+}
+
+/* Profile dropdown specific styling */
+#profileDropdown {
+    cursor: pointer;
+    outline: none;
+}
+
+#profileDropdown:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
 }
