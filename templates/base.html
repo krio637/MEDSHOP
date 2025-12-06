@@ -106,61 +106,26 @@
                                     <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
                                 </div>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end google-style-dropdown" aria-labelledby="profileDropdown">
+                            <ul class="dropdown-menu dropdown-menu-end simple-profile-dropdown" aria-labelledby="profileDropdown">
                                 <li class="dropdown-profile-header">
-                                    <div class="d-flex align-items-center p-3">
-                                        <div class="profile-avatar-circle me-3">
-                                            <i class="fas fa-user"></i>
+                                    <div class="text-center py-3">
+                                        <div class="profile-avatar-simple mb-2">
+                                            <div class="avatar-inner"></div>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
-                                            <div class="text-muted small">{{ user.email }}</div>
+                                        <div class="fw-bold text-dark mb-1">{{ user.username }}</div>
+                                        <div class="text-muted small">
+                                            {% if user.is_staff %}
+                                                Admin
+                                            {% else %}
+                                                Customer
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider my-0"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'profile' %}">
-                                        <div class="d-flex align-items-center">
-                                            <div class="dropdown-icon-wrapper">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <span>Manage your Account</span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider my-0"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'order_history' %}">
-                                        <div class="d-flex align-items-center">
-                                            <div class="dropdown-icon-wrapper">
-                                                <i class="fas fa-history"></i>
-                                            </div>
-                                            <span>Order History</span>
-                                        </div>
-                                    </a>
-                                </li>
-                                {% if user.is_staff %}
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
-                                        <div class="d-flex align-items-center">
-                                            <div class="dropdown-icon-wrapper">
-                                                <i class="fas fa-tachometer-alt"></i>
-                                            </div>
-                                            <span>Admin Dashboard</span>
-                                        </div>
-                                    </a>
-                                </li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider my-0"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'logout' %}">
-                                        <div class="d-flex align-items-center">
-                                            <div class="dropdown-icon-wrapper">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                            </div>
-                                            <span>Sign out</span>
-                                        </div>
+                                <li class="px-3 py-2">
+                                    <a href="{% url 'profile' %}" class="btn btn-primary w-100 simple-profile-btn">
+                                        View Profile
                                     </a>
                                 </li>
                             </ul>
@@ -308,7 +273,7 @@
     
     <!-- Custom JavaScript for enhanced UX -->
     <script>
-        // Profile dropdown functionality - Hover to open (Google-style)
+        // Profile dropdown functionality - Hover to open (Simple style)
         document.addEventListener('DOMContentLoaded', function() {
             const profileDropdown = document.getElementById('profileDropdown');
             const dropdownMenu = profileDropdown ? profileDropdown.nextElementSibling : null;
