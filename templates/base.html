@@ -19,35 +19,20 @@
     <link href="{% static 'css/responsive.css' %}?v=6.0" rel="stylesheet">
     <link href="{% static 'css/dropdown-fix.css' %}?v=1.0" rel="stylesheet">
     
-    <!-- Inline dropdown fix -->
+    <!-- Google-style dropdown styles -->
     <style>
-        .dropdown-menu {
-            display: none;
-            position: absolute !important;
-            top: 100% !important;
-            right: 0 !important;
-            left: auto !important;
-            z-index: 9999 !important;
-            min-width: 200px;
-            background: white !important;
-            border: 1px solid rgba(0,0,0,0.15);
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            margin-top: 0.5rem;
-            padding: 0.5rem 0;
-        }
+        /* Ensure dropdown shows when active */
         .dropdown-menu.show {
             display: block !important;
         }
-        .dropdown-item {
-            padding: 0.75rem 1.25rem;
-            color: #333 !important;
-            text-decoration: none;
-            display: block;
+        
+        /* Override default Bootstrap dropdown styles for Google-style */
+        .google-style-dropdown {
+            display: none;
         }
-        .dropdown-item:hover {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-            color: white !important;
+        
+        .google-style-dropdown.show {
+            display: block !important;
         }
     </style>
     
@@ -117,29 +102,65 @@
                         </li>
                         <li class="nav-item dropdown">
                             <button class="nav-link btn btn-link px-2 dropdown-toggle" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none; padding: 0; color: white !important;">
-                                <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
+                                <div class="profile-avatar-small">
+                                    <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
+                                </div>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                <li>
-                                    <h6 class="dropdown-header">
-                                        <i class="fas fa-user me-2"></i>{{ user.get_full_name|default:user.username }}
-                                    </h6>
+                            <ul class="dropdown-menu dropdown-menu-end google-style-dropdown" aria-labelledby="profileDropdown">
+                                <li class="dropdown-profile-header">
+                                    <div class="d-flex align-items-center p-3">
+                                        <div class="profile-avatar-circle me-3">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+                                            <div class="text-muted small">{{ user.email }}</div>
+                                        </div>
+                                    </div>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider my-0"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'profile' %}">
-                                        <i class="fas fa-user me-2"></i>My Profile
+                                        <div class="d-flex align-items-center">
+                                            <div class="dropdown-icon-wrapper">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <span>Manage your Account</span>
+                                        </div>
                                     </a>
                                 </li>
+                                <li><hr class="dropdown-divider my-0"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'order_history' %}">
-                                        <i class="fas fa-history me-2"></i>Order History
+                                        <div class="d-flex align-items-center">
+                                            <div class="dropdown-icon-wrapper">
+                                                <i class="fas fa-history"></i>
+                                            </div>
+                                            <span>Order History</span>
+                                        </div>
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                {% if user.is_staff %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="dropdown-icon-wrapper">
+                                                <i class="fas fa-tachometer-alt"></i>
+                                            </div>
+                                            <span>Admin Dashboard</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider my-0"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'logout' %}">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        <div class="d-flex align-items-center">
+                                            <div class="dropdown-icon-wrapper">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </div>
+                                            <span>Sign out</span>
+                                        </div>
                                     </a>
                                 </li>
                             </ul>
@@ -287,18 +308,24 @@
     
     <!-- Custom JavaScript for enhanced UX -->
     <script>
-        // Profile dropdown functionality - Bootstrap 5 handles this automatically
-        // This ensures proper initialization and cleanup
+        // Profile dropdown functionality - Google-style
         document.addEventListener('DOMContentLoaded', function() {
             const profileDropdown = document.getElementById('profileDropdown');
-            if (profileDropdown) {
+            const dropdownMenu = profileDropdown ? profileDropdown.nextElementSibling : null;
+            
+            if (profileDropdown && dropdownMenu) {
                 // Initialize Bootstrap dropdown
-                const dropdown = new bootstrap.Dropdown(profileDropdown);
+                const dropdown = new bootstrap.Dropdown(profileDropdown, {
+                    offset: [0, 8]
+                });
                 
-                // Ensure dropdown closes when clicking outside (Bootstrap handles this, but we ensure it works)
+                // Ensure dropdown closes when clicking outside
                 document.addEventListener('click', function(e) {
-                    if (!profileDropdown.contains(e.target) && !profileDropdown.nextElementSibling.contains(e.target)) {
-                        dropdown.hide();
+                    if (profileDropdown && dropdownMenu) {
+                        const isClickInside = profileDropdown.contains(e.target) || dropdownMenu.contains(e.target);
+                        if (!isClickInside && dropdownMenu.classList.contains('show')) {
+                            dropdown.hide();
+                        }
                     }
                 });
             }
