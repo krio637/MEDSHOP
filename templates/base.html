@@ -103,12 +103,37 @@
         }
         #profileDropdown {
             padding: 0.25rem !important;
+            border: none !important;
+            background: none !important;
         }
-        #profileDropdown i {
-            transition: transform 0.2s ease;
+        /* Profile Icon Circle - Small (navbar) */
+        .profile-icon-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #5f6368;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s ease;
         }
-        #profileDropdown:hover i {
-            transform: scale(1.1);
+        #profileDropdown:hover .profile-icon-circle {
+            background: #4a4a4a;
+            transform: scale(1.05);
+        }
+        /* Profile Avatar Large (dropdown) */
+        .profile-avatar-lg {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            font-size: 1.5rem;
         }
         .dropdown-menu .text-center.py-3 {
             background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
@@ -209,12 +234,16 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle px-2" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none;">
-                                <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
+                            <button class="nav-link dropdown-toggle px-2" id="profileDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="profile-icon-circle">
+                                    <i class="fas fa-user"></i>
+                                </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li class="text-center py-3 px-3">
-                                    <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
+                                    <div class="profile-avatar-lg mb-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
                                     <div class="fw-bold">{{ user.username }}</div>
                                     <small class="text-muted">{{ user.email|default:"" }}</small>
                                 </li>
