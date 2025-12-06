@@ -1562,3 +1562,60 @@ footer::before {
 .chat-messages::-webkit-scrollbar-thumb:hover {
     background: #FFA500;
 }
+
+
+/* Fix navbar dropdown */
+.navbar-nav .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    z-index: 1050;
+    min-width: 200px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 0.5rem;
+}
+
+.navbar-nav .dropdown-menu.show {
+    display: block;
+}
+
+.navbar-nav .dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.navbar-nav .dropdown-item:hover {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white;
+}
+
+.navbar-nav .dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+
+/* Ensure dropdown works on mobile */
+@media (max-width: 991.98px) {
+    .navbar-nav .dropdown-menu {
+        position: static;
+        float: none;
+        width: 100%;
+        margin-top: 0;
+        border: none;
+        box-shadow: none;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-nav .dropdown-item {
+        color: #1f2937;
+    }
+    
+    .navbar-nav .dropdown-item:hover {
+        background: rgba(139, 69, 19, 0.1);
+        color: #8B4513;
+    }
+}
