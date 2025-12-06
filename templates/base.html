@@ -194,6 +194,50 @@
         </div>
     </footer>
 
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="chat-widget">
+        <button id="chatButton" class="chat-button">
+            <i class="fas fa-comments"></i>
+        </button>
+        
+        <div id="chatBox" class="chat-box" style="display: none;">
+            <div class="chat-header">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-spa me-2"></i>
+                    <div>
+                        <h6 class="mb-0">Tamraparni Support</h6>
+                        <small class="text-white-50">We're here to help!</small>
+                    </div>
+                </div>
+                <button id="closeChat" class="btn-close btn-close-white"></button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! 👋 Welcome to Tamraparni Ayurveda. How can I help you today?</p>
+                        <div class="quick-replies">
+                            <button class="quick-reply" data-message="Tell me about your products">Products Info</button>
+                            <button class="quick-reply" data-message="How do I place an order?">Place Order</button>
+                            <button class="quick-reply" data-message="What are your delivery options?">Delivery Info</button>
+                            <button class="quick-reply" data-message="I need help with my account">Account Help</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type your message..." class="form-control">
+                <button id="sendMessage" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JavaScript for enhanced UX -->
@@ -329,6 +373,110 @@
             input.addEventListener('blur', function() {
                 this.parentElement.style.transform = 'scale(1)';
             });
+        });
+
+        // Chat Widget Functionality
+        const chatButton = document.getElementById('chatButton');
+        const chatBox = document.getElementById('chatBox');
+        const closeChat = document.getElementById('closeChat');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessage = document.getElementById('sendMessage');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Toggle chat box
+        chatButton.addEventListener('click', function() {
+            chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
+            if (chatBox.style.display === 'flex') {
+                chatInput.focus();
+            }
+        });
+
+        closeChat.addEventListener('click', function() {
+            chatBox.style.display = 'none';
+        });
+
+        // Send message function
+        function sendChatMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.value = '';
+                
+                // Simulate bot response
+                setTimeout(() => {
+                    const response = getBotResponse(message);
+                    addMessage(response, 'bot');
+                }, 1000);
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message`;
+            
+            if (sender === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>${text}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <p>${text}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Simple bot responses
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('product') || lowerMessage.includes('medicine')) {
+                return 'We offer authentic Ayurvedic medicines and wellness products. You can browse our collection by visiting the Medicines page. All our products are 100% natural and certified.';
+            } else if (lowerMessage.includes('order') || lowerMessage.includes('buy')) {
+                return 'To place an order: 1) Browse our medicines, 2) Add items to cart, 3) Proceed to checkout. You can create an account or checkout as a guest. We accept all major payment methods.';
+            } else if (lowerMessage.includes('delivery') || lowerMessage.includes('shipping')) {
+                return 'We offer fast delivery across India. Standard delivery takes 3-5 business days. Express delivery is available for urgent orders. Free shipping on orders above ₹500!';
+            } else if (lowerMessage.includes('account') || lowerMessage.includes('login')) {
+                return 'You can create an account by clicking "Sign Up" in the navigation menu. With an account, you can track orders, save addresses, and get personalized recommendations.';
+            } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email')) {
+                return 'You can reach us at:<br>📞 +91 97100 36499<br>📧 tamraparniayurveda@gmail.com<br>🕒 Mon-Sat: 9:00 AM - 8:00 PM';
+            } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                return 'Hello! How can I assist you with your Ayurvedic wellness journey today?';
+            } else if (lowerMessage.includes('thank')) {
+                return 'You\'re welcome! Feel free to ask if you have any other questions. 😊';
+            } else {
+                return 'Thank you for your message! For specific inquiries, please contact us at +91 97100 36499 or tamraparniayurveda@gmail.com. Our team will be happy to help!';
+            }
+        }
+
+        // Send message on button click
+        sendMessage.addEventListener('click', sendChatMessage);
+
+        // Send message on Enter key
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+        // Quick reply buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('quick-reply')) {
+                const message = e.target.getAttribute('data-message');
+                chatInput.value = message;
+                sendChatMessage();
+            }
         });
     </script>
 </body>
