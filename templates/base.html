@@ -19,6 +19,38 @@
     <link href="{% static 'css/responsive.css' %}?v=6.0" rel="stylesheet">
     <link href="{% static 'css/dropdown-fix.css' %}?v=1.0" rel="stylesheet">
     
+    <!-- Inline dropdown fix -->
+    <style>
+        .dropdown-menu {
+            display: none;
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+            left: auto !important;
+            z-index: 9999 !important;
+            min-width: 200px;
+            background: white !important;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-top: 0.5rem;
+            padding: 0.5rem 0;
+        }
+        .dropdown-menu.show {
+            display: block !important;
+        }
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            color: #333 !important;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+            color: white !important;
+        }
+    </style>
+    
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"
 </head>
