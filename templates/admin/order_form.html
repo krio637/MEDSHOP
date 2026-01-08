@@ -1,0 +1,267 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}{% if order %}Edit Order #{{ order.id }}{% else %}Add New Order{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {% if order %}
+                        <i class="fas fa-edit"></i> Edit Order #{{ order.id }}
+                    {% else %}
+                        <i class="fas fa-plus"></i> Add New Order
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Customer Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="user" class="form-label">Customer *</label>
+                            <select class="form-select" id="user" name="user" required>
+                                <option value="">Select Customer</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}" 
+                                            {% if order and order.user.id == customer.id %}selected{% endif %}>
+                                        {{ customer.first_name }} {{ customer.last_name }} ({{ customer.email }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status *</label>
+                            <select class="form-select" id="status" name="status" required>
+                                {% for status_code, status_name in status_choices %}
+                                    <option value="{{ status_code }}" 
+                                            {% if order and order.status == status_code %}selected{% endif %}>
+                                        {{ status_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="phone_number" class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{% if order %}{{ order.phone_number }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="total_amount" class="form-label">Total Amount (₹) *</label>
+                            <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" 
+                                   value="{% if order %}{{ order.total_amount }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipping Address -->
+                    <div class="mb-3">
+                        <label for="shipping_address" class="form-label">Shipping Address *</label>
+                        <textarea class="form-control" id="shipping_address" name="shipping_address" 
+                                  rows="3" required>{% if order %}{{ order.shipping_address }}{% endif %}</textarea>
+                    </div>
+                    
+                    <!-- Order Items Section -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2">Order Items</h6>
+                        <div id="order-items">
+                            {% if order %}
+                                {% for item in order.items.all %}
+                                <div class="row mb-2 order-item">
+                                    <div class="col-md-5">
+                                        <select class="form-select" name="medicine_{{ forloop.counter0 }}" required>
+                                            <option value="">Select Medicine</option>
+                                            {% for medicine in medicines %}
+                                                <option value="{{ medicine.id }}" 
+                                                        {% if item.medicine.id == medicine.id %}selected{% endif %}>
+                                                    {{ medicine.name }} - ₹{{ medicine.price }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control" name="quantity_{{ forloop.counter0 }}" 
+                                               placeholder="Quantity" value="{{ item.quantity }}" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" step="0.01" class="form-control" name="price_{{ forloop.counter0 }}" 
+                                               placeholder="Price" value="{{ item.price }}" required>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="row mb-2 order-item">
+                                    <div class="col-md-5">
+                                        <select class="form-select" name="medicine_0" required>
+                                            <option value="">Select Medicine</option>
+                                            {% for medicine in medicines %}
+                                                <option value="{{ medicine.id }}">
+                                                    {{ medicine.name }} - ₹{{ medicine.price }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control" name="quantity_0" 
+                                               placeholder="Quantity" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" step="0.01" class="form-control" name="price_0" 
+                                               placeholder="Price" required>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if order %}Update Order{% else %}Create Order{% endif %}
+                        </button>
+                        <a href="{% url 'admin_orders' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Order Information</h6>
+            </div>
+            <div class="card-body">
+                {% if order %}
+                    <p><strong>Order ID:</strong> #{{ order.id }}</p>
+                    <p><strong>Created:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Last Updated:</strong> {{ order.updated_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Current Status:</strong> 
+                        <span class="badge {% if order.status == 'PENDING' %}bg-warning{% elif order.status == 'CONFIRMED' %}bg-info{% elif order.status == 'SHIPPED' %}bg-primary{% elif order.status == 'DELIVERED' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </p>
+                {% else %}
+                    <p class="text-muted">Fill out the form to create a new order. Make sure to add at least one item to the order.</p>
+                {% endif %}
+                
+                <hr>
+                <h6>Tips:</h6>
+                <ul class="small text-muted">
+                    <li>Select a customer from the dropdown</li>
+                    <li>Add medicines and specify quantities</li>
+                    <li>Price will auto-fill based on medicine price</li>
+                    <li>Total amount will be calculated automatically</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let itemCounter = {% if order %}{{ order.items.count }}{% else %}1{% endif %};
+
+// Add new item row
+document.getElementById('add-item').addEventListener('click', function() {
+    const container = document.getElementById('order-items');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2 order-item';
+    newRow.innerHTML = `
+        <div class="col-md-5">
+            <select class="form-select" name="medicine_${itemCounter}" required>
+                <option value="">Select Medicine</option>
+                {% for medicine in medicines %}
+                    <option value="{{ medicine.id }}">
+                        {{ medicine.name }} - ₹{{ medicine.price }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" class="form-control" name="quantity_${itemCounter}" 
+                   placeholder="Quantity" min="1" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="0.01" class="form-control" name="price_${itemCounter}" 
+                   placeholder="Price" required>
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newRow);
+    itemCounter++;
+});
+
+// Remove item row
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-item')) {
+        const row = e.target.closest('.order-item');
+        if (document.querySelectorAll('.order-item').length > 1) {
+            row.remove();
+        } else {
+            alert('At least one item is required');
+        }
+    }
+});
+
+// Auto-fill price when medicine is selected
+document.addEventListener('change', function(e) {
+    if (e.target.name && e.target.name.startsWith('medicine_')) {
+        const index = e.target.name.split('_')[1];
+        const priceInput = document.querySelector(`input[name="price_${index}"]`);
+        const selectedOption = e.target.selectedOptions[0];
+        
+        if (selectedOption && selectedOption.text.includes('₹')) {
+            const price = selectedOption.text.split('₹')[1];
+            priceInput.value = price;
+        }
+    }
+});
+
+// Calculate total amount
+function calculateTotal() {
+    let total = 0;
+    document.querySelectorAll('.order-item').forEach(function(row) {
+        const quantity = row.querySelector('input[name^="quantity_"]').value || 0;
+        const price = row.querySelector('input[name^="price_"]').value || 0;
+        total += parseFloat(quantity) * parseFloat(price);
+    });
+    document.getElementById('total_amount').value = total.toFixed(2);
+}
+
+// Auto-calculate total when quantity or price changes
+document.addEventListener('input', function(e) {
+    if (e.target.name && (e.target.name.startsWith('quantity_') || e.target.name.startsWith('price_'))) {
+        calculateTotal();
+    }
+});
+</script>
+{% endblock %}

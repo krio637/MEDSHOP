@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Track Order - Tamraparni Ayurveda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-search me-2"></i>Track Your Order</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="mb-4">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="phone_number" class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   placeholder="Enter your phone number" required
+                                   value="{{ request.POST.phone_number|default:'' }}">
+                            <small class="text-muted">Enter phone number to see all your orders</small>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="order_id" class="form-label">Order ID (Optional)</label>
+                            <input type="text" class="form-control" id="order_id" name="order_id" 
+                                   placeholder="Enter Order ID for specific order"
+                                   value="{{ request.POST.order_id|default:'' }}">
+                            <small class="text-muted">Leave empty to see all orders</small>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-center">
+                            <button type="submit" class="btn btn-primary w-100 mt-3">
+                                <i class="fas fa-search"></i> Track
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                </div>
+                {% endif %}
+                
+                <!-- Multiple Orders List -->
+                {% if orders %}
+                <h5 class="mb-3"><i class="fas fa-list me-2"></i>Your Orders ({{ orders|length }})</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ord in orders %}
+                            <tr>
+                                <td><strong>#{{ ord.id }}</strong></td>
+                                <td>{{ ord.created_at|date:"d M Y" }}</td>
+                                <td>{{ ord.items.count }} item(s)</td>
+                                <td>{{ ord.total_amount|rupees_simple }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if ord.status == 'DELIVERED' %}bg-success
+                                        {% elif ord.status == 'SHIPPED' %}bg-info
+                                        {% elif ord.status == 'CONFIRMED' %}bg-primary
+                                        {% elif ord.status == 'CANCELLED' %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                                        {{ ord.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#order{{ ord.id }}">
+                                        <i class="fas fa-eye"></i> Details
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="order{{ ord.id }}">
+                                <td colspan="6">
+                                    <div class="p-3 bg-light rounded">
+                                        <!-- Order Timeline -->
+                                        <div class="order-timeline mb-3">
+                                            <div class="d-flex justify-content-between text-center">
+                                                <div class="timeline-step {% if ord.status in 'PENDING,CONFIRMED,SHIPPED,DELIVERED' %}active{% endif %}">
+                                                    <div class="timeline-icon"><i class="fas fa-clipboard-check"></i></div>
+                                                    <small>Pending</small>
+                                                </div>
+                                                <div class="timeline-step {% if ord.status in 'CONFIRMED,SHIPPED,DELIVERED' %}active{% endif %}">
+                                                    <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
+                                                    <small>Confirmed</small>
+                                                </div>
+                                                <div class="timeline-step {% if ord.status in 'SHIPPED,DELIVERED' %}active{% endif %}">
+                                                    <div class="timeline-icon"><i class="fas fa-truck"></i></div>
+                                                    <small>Shipped</small>
+                                                </div>
+                                                <div class="timeline-step {% if ord.status == 'DELIVERED' %}active{% endif %}">
+                                                    <div class="timeline-icon"><i class="fas fa-home"></i></div>
+                                                    <small>Delivered</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Items:</strong>
+                                                <ul class="mb-0">
+                                                    {% for item in ord.items.all %}
+                                                    <li>{{ item.medicine.name }} × {{ item.quantity }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Shipping Address:</strong>
+                                                <p class="mb-0">{{ ord.shipping_address|linebreaks }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                
+                <!-- Single Order Detail -->
+                {% if order %}
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Order #{{ order.id }}</h5>
+                            <span class="badge 
+                                {% if order.status == 'DELIVERED' %}bg-success
+                                {% elif order.status == 'SHIPPED' %}bg-info
+                                {% elif order.status == 'CONFIRMED' %}bg-primary
+                                {% elif order.status == 'CANCELLED' %}bg-danger
+                                {% else %}bg-warning{% endif %} fs-6">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Order Timeline -->
+                        <div class="order-timeline mb-4">
+                            <div class="d-flex justify-content-between text-center">
+                                <div class="timeline-step {% if order.status in 'PENDING,CONFIRMED,SHIPPED,DELIVERED' %}active{% endif %}">
+                                    <div class="timeline-icon"><i class="fas fa-clipboard-check"></i></div>
+                                    <small>Pending</small>
+                                </div>
+                                <div class="timeline-step {% if order.status in 'CONFIRMED,SHIPPED,DELIVERED' %}active{% endif %}">
+                                    <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
+                                    <small>Confirmed</small>
+                                </div>
+                                <div class="timeline-step {% if order.status in 'SHIPPED,DELIVERED' %}active{% endif %}">
+                                    <div class="timeline-icon"><i class="fas fa-truck"></i></div>
+                                    <small>Shipped</small>
+                                </div>
+                                <div class="timeline-step {% if order.status == 'DELIVERED' %}active{% endif %}">
+                                    <div class="timeline-icon"><i class="fas fa-home"></i></div>
+                                    <small>Delivered</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Order Date:</strong><br>{{ order.created_at|date:"d M Y, h:i A" }}</p>
+                                <p><strong>Total Amount:</strong><br>{{ order.total_amount|rupees_simple }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Shipping Address:</strong><br>{{ order.shipping_address|linebreaks }}</p>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Items Ordered</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items.all %}
+                                    <tr>
+                                        <td>{{ item.medicine.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.price|rupees_simple }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if not order and not orders and not error %}
+                <div class="text-center py-4">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">Enter your phone number to see all your orders.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                <i class="fas fa-question-circle me-1"></i>
+                Need help? Call us at <a href="tel:+919710036499">+91 97100 36499</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.order-timeline {
+    padding: 15px 0;
+}
+.timeline-step {
+    flex: 1;
+    position: relative;
+}
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    width: 100%;
+    height: 3px;
+    background: #dee2e6;
+    z-index: 0;
+}
+.timeline-step:last-child::before {
+    display: none;
+}
+.timeline-step.active::before {
+    background: #28a745;
+}
+.timeline-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 5px;
+    position: relative;
+    z-index: 1;
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+.timeline-step.active .timeline-icon {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}

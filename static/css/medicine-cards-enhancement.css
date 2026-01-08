@@ -1,0 +1,494 @@
+/* Medicine Cards and Components Enhancement - Gold & Brown Theme */
+
+/* Enhanced Medicine Cards */
+.medicine-card {
+    background: linear-gradient(145deg, #ffffff 0%, #fffef0 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.medicine-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.medicine-card:hover::before {
+    opacity: 1;
+}
+
+.medicine-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.2), 0 0 20px rgba(139, 69, 19, 0.1);
+    border-color: #FFD700;
+}
+
+.medicine-card .card-img-top {
+    transition: transform 0.4s ease;
+    border-radius: 1rem 1rem 0 0;
+}
+
+.medicine-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.medicine-card .card-title {
+    color: #8B4513;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.medicine-card .card-text {
+    color: #A0522D;
+    font-size: 0.8rem;
+}
+
+.medicine-card .price-tag-small {
+    color: #B8860B;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.medicine-card:hover .price-tag-small {
+    color: #8B4513;
+    transform: scale(1.1);
+}
+
+/* Enhanced Badges */
+.medicine-card .badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.medicine-card .badge.bg-warning {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    color: #654321 !important;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.medicine-card .badge.bg-success {
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+    color: #FFFACD !important;
+    box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+}
+
+/* Enhanced Buttons */
+.medicine-card .btn {
+    border-radius: 0.6rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.medicine-card .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.medicine-card .btn:hover::before {
+    left: 100%;
+}
+
+.medicine-card .btn-primary {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border: none;
+    color: #654321;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.medicine-card .btn-primary:hover {
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4);
+}
+
+.medicine-card .btn-outline-primary {
+    border: 2px solid #8B4513;
+    color: #8B4513;
+    background: transparent;
+}
+
+.medicine-card .btn-outline-primary:hover {
+    background: #8B4513;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+/* Stock Status Icons */
+.medicine-card .text-success {
+    color: #8B4513 !important;
+}
+
+.medicine-card .text-warning {
+    color: #FFA500 !important;
+}
+
+.medicine-card .text-danger {
+    color: #dc3545 !important;
+}
+
+/* Category Cards Enhancement */
+.category-card {
+    background: linear-gradient(145deg, #ffffff 0%, #fffef0 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 1.2rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #8B4513 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.category-card:hover::before {
+    opacity: 0.05;
+}
+
+.category-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.2), 0 0 20px rgba(139, 69, 19, 0.1);
+    border-color: #FFD700;
+}
+
+.category-card .category-icon {
+    font-size: 3rem;
+    color: #FFD700;
+    margin-bottom: 1.5rem;
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.category-card:hover .category-icon {
+    transform: scale(1.15) rotate(5deg);
+    color: #8B4513;
+    filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.3));
+}
+
+.category-card h6 {
+    color: #8B4513;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 2;
+}
+
+.category-card .text-muted {
+    color: #A0522D !important;
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 2;
+}
+
+.category-card .btn {
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    border-radius: 0.6rem;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.category-card .btn:hover {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #654321;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+/* Feature Icons Enhancement */
+.feature-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #8B4513 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s;
+}
+
+.feature-icon:hover::before {
+    animation: iconShine 0.8s ease;
+}
+
+@keyframes iconShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.feature-icon:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4), 0 0 25px rgba(139, 69, 19, 0.2);
+}
+
+/* Stats Counter Enhancement */
+.stats-counter {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #FFD700 0%, #8B4513 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Testimonial Cards Enhancement */
+.testimonial-card {
+    background: linear-gradient(145deg, #ffffff 0%, #fffef0 100%);
+    border-radius: 1.2rem;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    position: relative;
+    margin: 1rem 0;
+    border-left: 4px solid #FFD700;
+    transition: all 0.3s ease;
+}
+
+.testimonial-card::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    font-size: 4rem;
+    color: #FFD700;
+    opacity: 0.3;
+    font-family: serif;
+}
+
+.testimonial-card:hover {
+    transform: translateX(8px);
+    box-shadow: -8px 8px 25px rgba(255, 215, 0, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-left-color: #8B4513;
+}
+
+.testimonial-card p {
+    color: #654321;
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.testimonial-card h6 {
+    color: #8B4513;
+    font-weight: 600;
+}
+
+.testimonial-card .text-muted {
+    color: #A0522D !important;
+}
+
+/* Call to Action Section Enhancement */
+.bg-primary {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #8B4513 100%) !important;
+}
+
+.bg-primary h3,
+.bg-primary .lead {
+    color: #654321 !important;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.bg-primary .btn-light {
+    background: white;
+    color: #8B4513;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.bg-primary .btn-light:hover {
+    background: #8B4513;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4);
+}
+
+.bg-primary .btn-outline-light {
+    border: 2px solid white;
+    color: white;
+    background: transparent;
+    font-weight: 600;
+}
+
+.bg-primary .btn-outline-light:hover {
+    background: white;
+    color: #8B4513;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+/* Statistics Section Enhancement */
+.bg-light {
+    background: linear-gradient(135deg, #fffef0 0%, #fff8dc 50%, #f5f5dc 100%) !important;
+    border-top: 2px solid #FFD700;
+    border-bottom: 2px solid #FFD700;
+    position: relative;
+}
+
+.bg-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #8B4513, transparent);
+}
+
+.bg-light::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #8B4513, transparent);
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .medicine-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+    
+    .category-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+    
+    .feature-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.5rem;
+    }
+    
+    .stats-counter {
+        font-size: 2.2rem;
+    }
+    
+    .testimonial-card {
+        padding: 1.5rem;
+    }
+    
+    .category-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .category-card .category-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* Animation Keyframes */
+@keyframes cardGlow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+    50% { box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2), 0 0 20px rgba(139, 69, 19, 0.1); }
+}
+
+@keyframes priceGlow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); color: #8B4513; }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Hover Animations */
+.medicine-card:hover .price-tag-small {
+    animation: priceGlow 0.6s ease;
+}
+
+.category-card:hover .category-icon {
+    animation: iconFloat 1s ease infinite;
+}
+
+/* Loading States */
+.medicine-card.loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+/* Focus States for Accessibility */
+.medicine-card:focus-within,
+.category-card:focus-within {
+    outline: 2px solid #FFD700;
+    outline-offset: 2px;
+}
+
+.medicine-card .btn:focus,
+.category-card .btn:focus {
+    outline: 2px solid #8B4513;
+    outline-offset: 2px;
+}

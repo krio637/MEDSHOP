@@ -1,0 +1,312 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-primary">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Medicines
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_medicines }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-pills fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_revenue|rupees_simple }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-left-warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Row -->
+<div class="row mb-4">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_medicine_add' %}" class="btn btn-success btn-block">
+                            <i class="fas fa-plus-circle"></i> Add New Medicine
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_categories' %}" class="btn btn-info btn-block">
+                            <i class="fas fa-tags"></i> Manage Categories
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_medicines' %}?stock=low_stock" class="btn btn-warning btn-block">
+                            <i class="fas fa-exclamation-triangle"></i> Low Stock Items
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_orders' %}?status=PENDING" class="btn btn-primary btn-block">
+                            <i class="fas fa-clock"></i> Pending Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Stock Status</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-success">{{ active_medicines }}</div>
+                            <div class="small text-muted">Active Medicines</div>
+                            <a href="{% url 'admin_medicines' %}?is_active__exact=1" class="btn btn-sm btn-outline-success mt-1">View</a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-warning">{{ low_stock }}</div>
+                            <div class="small text-muted">Low Stock</div>
+                            <a href="{% url 'admin_medicines' %}?stock=low_stock" class="btn btn-sm btn-outline-warning mt-1">Manage</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-danger">{{ out_of_stock }}</div>
+                            <div class="small text-muted">Out of Stock</div>
+                            <a href="{% url 'admin_medicines' %}?stock=out_of_stock" class="btn btn-sm btn-outline-danger mt-1">Restock</a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-info">{{ total_users }}</div>
+                            <div class="small text-muted">Total Users</div>
+                            <a href="{% url 'admin_users' %}" class="btn btn-sm btn-outline-info mt-1">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Categories Overview</h6>
+                <a href="{% url 'admin_categories' %}" class="btn btn-sm btn-outline-primary">Manage</a>
+            </div>
+            <div class="card-body">
+                {% for category in top_categories %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <div class="font-weight-bold">{{ category.name }}</div>
+                        <small class="text-muted">{{ category.medicine_count }} products</small>
+                    </div>
+                    <div class="text-right">
+                        <span class="badge bg-primary">{{ category.active_count }} active</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">No categories found</p>
+                <div class="text-center">
+                    <a href="{% url 'admin_categories' %}" class="btn btn-primary">Add Categories</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders and Low Stock -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
+                                <td>{{ order.total_amount|rupees_simple }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'PENDING' %}bg-warning
+                                        {% elif order.status == 'CONFIRMED' %}bg-info
+                                        {% elif order.status == 'SHIPPED' %}bg-primary
+                                        {% elif order.status == 'DELIVERED' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No recent orders</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'admin_orders' %}" class="btn btn-primary">View All Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">Low Stock Alert</h6>
+            </div>
+            <div class="card-body">
+                {% for medicine in low_stock_medicines %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <div class="font-weight-bold">{{ medicine.name }}</div>
+                        <small class="text-muted">{{ medicine.manufacturer }}</small>
+                    </div>
+                    <div class="text-right">
+                        <span class="badge {% if medicine.stock_quantity == 0 %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ medicine.stock_quantity }} left
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">All medicines are well stocked!</p>
+                {% endfor %}
+                
+                {% if low_stock_medicines %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'admin_medicines' %}?stock=low_stock" class="btn btn-warning btn-sm">
+                        Manage Stock
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Revenue Chart
+const ctx = document.getElementById('revenueChart').getContext('2d');
+const revenueChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [{% for item in monthly_revenue %}'{{ item.month }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Revenue (₹)',
+            data: [{% for item in monthly_revenue %}{{ item.revenue }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toLocaleString('en-IN');
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

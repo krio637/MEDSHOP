@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Media - Tamraparni Ayurveda{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="luxury-title"><i class="fas fa-play-circle me-2"></i>Media</h1>
+        <p class="elegant-subtitle">Videos, Reels & More</p>
+    </div>
+
+    <!-- Featured Videos Section -->
+    {% if featured_videos %}
+    <section class="mb-5">
+        <h3 class="mb-4"><i class="fas fa-star text-warning me-2"></i>Featured Videos</h3>
+        <div class="row">
+            {% for video in featured_videos %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 video-card">
+                    <div class="video-container">
+                        {% if video.video_file %}
+                        <video controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}" class="w-100">
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                            Your browser does not support video.
+                        </video>
+                        {% elif video.embed_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.embed_url }}" 
+                                    title="{{ video.title }}"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    loading="lazy"></iframe>
+                        </div>
+                        {% elif video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-warning text-dark mb-2">{{ video.get_video_type_display }}</span>
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        {% if video.description %}
+                        <div class="card-text small text-muted video-description">{{ video.description|urlize|linebreaksbr }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Reels Section -->
+    {% if reels %}
+    <section class="mb-5">
+        <h3 class="mb-4"><i class="fab fa-instagram text-danger me-2"></i>Reels</h3>
+        <div class="row">
+            {% for video in reels %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 video-card">
+                    <div class="video-container">
+                        {% if video.video_file %}
+                        <video controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}" class="w-100">
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                        </video>
+                        {% elif video.embed_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.embed_url }}" 
+                                    title="{{ video.title }}"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    loading="lazy"></iframe>
+                        </div>
+                        {% elif video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-danger mb-2">{{ video.get_video_type_display }}</span>
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        {% if video.description %}
+                        <div class="card-text small text-muted video-description">{{ video.description|urlize|linebreaksbr }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Promotional Videos Section -->
+    {% if promos %}
+    <section class="mb-5">
+        <h3 class="mb-4"><i class="fas fa-bullhorn text-primary me-2"></i>Promotional Videos</h3>
+        <div class="row">
+            {% for video in promos %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 video-card">
+                    <div class="video-container">
+                        {% if video.video_file %}
+                        <video controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}" class="w-100">
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                        </video>
+                        {% elif video.embed_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.embed_url }}" 
+                                    title="{{ video.title }}"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    loading="lazy"></iframe>
+                        </div>
+                        {% elif video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        {% if video.description %}
+                        <div class="card-text text-muted video-description">{{ video.description|urlize|linebreaksbr }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Testimonials Section -->
+    {% if testimonials %}
+    <section class="mb-5">
+        <h3 class="mb-4"><i class="fas fa-comments text-success me-2"></i>Customer Testimonials</h3>
+        <div class="row">
+            {% for video in testimonials %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 video-card">
+                    <div class="video-container">
+                        {% if video.video_file %}
+                        <video controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}" class="w-100">
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                        </video>
+                        {% elif video.embed_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.embed_url }}" 
+                                    title="{{ video.title }}"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    loading="lazy"></iframe>
+                        </div>
+                        {% elif video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        {% if video.description %}
+                        <div class="card-text small text-muted video-description">{{ video.description|urlize|linebreaksbr }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- All Videos Section (if no categorized videos) -->
+    {% if videos and not featured_videos and not reels and not promos and not testimonials %}
+    <section class="mb-5">
+        <h3 class="mb-4"><i class="fas fa-video me-2"></i>All Videos</h3>
+        <div class="row">
+            {% for video in videos %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 video-card">
+                    <div class="video-container">
+                        {% if video.video_file %}
+                        <video controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}" class="w-100">
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                        </video>
+                        {% elif video.embed_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.embed_url }}" 
+                                    title="{{ video.title }}"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    loading="lazy"></iframe>
+                        </div>
+                        {% elif video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-secondary mb-2">{{ video.get_video_type_display }}</span>
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        {% if video.description %}
+                        <p class="card-text small text-muted">{{ video.description|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- No Videos Message -->
+    {% if not videos %}
+    <div class="text-center py-5">
+        <i class="fas fa-video fa-4x text-muted mb-4"></i>
+        <h4>Coming Soon!</h4>
+        <p class="text-muted">We're working on adding exciting video content. Stay tuned!</p>
+        <div class="mt-4">
+            <h5>Follow us for updates:</h5>
+            <div class="d-flex gap-3 justify-content-center flex-wrap mt-3">
+                {% if site_settings.instagram_url %}
+                <a href="{{ site_settings.instagram_url }}" target="_blank" class="btn btn-outline-danger">
+                    <i class="fab fa-instagram me-2"></i>Instagram
+                </a>
+                {% endif %}
+                {% if site_settings.youtube_url %}
+                <a href="{{ site_settings.youtube_url }}" target="_blank" class="btn btn-outline-danger">
+                    <i class="fab fa-youtube me-2"></i>YouTube
+                </a>
+                {% endif %}
+                {% if site_settings.facebook_url %}
+                <a href="{{ site_settings.facebook_url }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="fab fa-facebook me-2"></i>Facebook
+                </a>
+                {% endif %}
+                {% if site_settings.whatsapp_number %}
+                <a href="https://wa.me/{{ site_settings.whatsapp_number|whatsapp_number }}" target="_blank" class="btn btn-outline-success"></a>
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Follow Us Section -->
+    <div class="card mt-5">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Follow Us</h5>
+        </div>
+        <div class="card-body text-center">
+            <p class="text-muted mb-3">Stay connected with us on social media for latest updates!</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                {% if site_settings.youtube_url %}
+                <a href="{{ site_settings.youtube_url }}" target="_blank" class="btn btn-danger">
+                    <i class="fab fa-youtube me-2"></i>YouTube
+                </a>
+                {% endif %}
+                {% if site_settings.instagram_url %}
+                <a href="{{ site_settings.instagram_url }}" target="_blank" class="btn btn-gradient" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; border: none;">
+                    <i class="fab fa-instagram me-2"></i>Instagram
+                </a>
+                {% endif %}
+                {% if site_settings.facebook_url %}
+                <a href="{{ site_settings.facebook_url }}" target="_blank" class="btn btn-primary">
+                    <i class="fab fa-facebook me-2"></i>Facebook
+                </a>
+                {% endif %}
+                {% if site_settings.twitter_url %}
+                <a href="{{ site_settings.twitter_url }}" target="_blank" class="btn btn-info">
+                    <i class="fab fa-twitter me-2"></i>Twitter
+                </a>
+                {% endif %}
+                {% if site_settings.linkedin_url %}
+                <a href="{{ site_settings.linkedin_url }}" target="_blank" class="btn btn-primary" style="background: #0077b5; border-color: #0077b5;">
+                    <i class="fab fa-linkedin me-2"></i>LinkedIn
+                </a>
+                {% endif %}
+                {% if site_settings.whatsapp_number %}
+                <a href="https://wa.me/{{ site_settings.whatsapp_number|whatsapp_number }}" target="_blank" class="btn btn-success"></a>
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4><i class="fas fa-envelope me-2"></i>Media Inquiries</h4>
+            <p>For media inquiries, interviews, or press materials, please contact:</p>
+            <ul class="list-unstyled">
+                <li><i class="fas fa-envelope text-primary me-2"></i><a href="mailto:tamraparniayurveda@gmail.com">tamraparniayurveda@gmail.com</a></li>
+                <li><i class="fas fa-phone text-primary me-2"></i><a href="tel:+919710036499">+91 97100 36499</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.video-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.video-container {
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+.video-container video,
+.video-container img {
+    width: 100%;
+    display: block;
+}
+.video-container iframe {
+    border: none;
+}
+.reel-card {
+    max-width: 250px;
+    margin: 0 auto;
+}
+.reel-container {
+    aspect-ratio: 9/16;
+}
+.reel-container video,
+.reel-container iframe {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* Description with clickable links */
+.video-description {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.video-description a {
+    color: #8B4513;
+    text-decoration: underline;
+    word-break: break-all;
+}
+.video-description a:hover {
+    color: #654321;
+    text-decoration: none;
+}
+</style>
+{% endblock %}

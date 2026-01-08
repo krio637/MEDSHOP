@@ -1,0 +1,364 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}
+    {% if medicine %}Edit Medicine{% else %}Add Medicine{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'admin_medicines' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Medicines
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {% if medicine %}
+                        <i class="fas fa-edit"></i> Edit Medicine: {{ medicine.name }}
+                    {% else %}
+                        <i class="fas fa-plus"></i> Add New Medicine
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="medicine-form" 
+                      action="{% if medicine %}{% url 'admin_medicine_edit' medicine.id %}{% else %}{% url 'admin_medicine_add' %}{% endif %}">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Medicine Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{% if medicine %}{{ medicine.name }}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" 
+                                                {% if medicine and medicine.category.id == category.id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required>{% if medicine %}{{ medicine.description }}{% endif %}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="mrp" class="form-label">MRP (₹) *</label>
+                                <input type="number" class="form-control" id="mrp" name="mrp" 
+                                       step="0.01" min="0" value="{% if medicine %}{{ medicine.mrp }}{% endif %}" required>
+                                <small class="text-muted">Maximum Retail Price</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Selling Price (₹) *</label>
+                                <input type="number" class="form-control" id="price" name="price" 
+                                       step="0.01" min="0" value="{% if medicine %}{{ medicine.price }}{% endif %}" required>
+                                <small class="text-muted">Your selling price</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="stock_quantity" class="form-label">Stock Quantity *</label>
+                                <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" 
+                                       min="0" value="{% if medicine %}{{ medicine.stock_quantity }}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="prescription_type" class="form-label">Prescription Type *</label>
+                                <select class="form-select" id="prescription_type" name="prescription_type" required>
+                                    <option value="OTC" {% if medicine and medicine.prescription_type == 'OTC' %}selected{% endif %}>
+                                        Over the Counter
+                                    </option>
+                                    <option value="RX" {% if medicine and medicine.prescription_type == 'RX' %}selected{% endif %}>
+                                        Prescription Required
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="manufacturer" class="form-label">Manufacturer</label>
+                                <input type="text" class="form-control" id="manufacturer" name="manufacturer" 
+                                       value="{% if medicine %}{{ medicine.manufacturer|default:'' }}{% endif %}" 
+                                       placeholder="Enter manufacturer name (optional)">
+                                <small class="text-muted">Optional - Leave blank if unknown</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="expiry_date" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date" 
+                                       value="{% if medicine and medicine.expiry_date %}{{ medicine.expiry_date|date:'Y-m-d' }}{% endif %}">
+                                <small class="text-muted">Optional - Leave blank if not applicable</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if not medicine or medicine.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Active (visible to customers)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Main Medicine Image -->
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Primary Medicine Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        {% if medicine and medicine.image %}
+                            <div class="mt-2">
+                                <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" 
+                                     style="max-width: 200px; max-height: 200px;" class="img-thumbnail">
+                                <p class="small text-muted mt-1">Current primary image</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Multiple Images Gallery -->
+                    <div class="mb-3">
+                        <label class="form-label">Additional Images Gallery</label>
+                        <div class="border rounded p-3" style="background: #f8f9fa;">
+                            
+                            <!-- Multiple File Upload -->
+                            <div class="mb-3">
+                                <input type="file" class="form-control" id="gallery_images" name="gallery_images" 
+                                       accept="image/*" multiple>
+                                <small class="text-muted">Select multiple images (Ctrl+Click or Cmd+Click)</small>
+                            </div>
+                            
+                            <!-- Existing Images Display -->
+                            {% if medicine and medicine.images.exists %}
+                                <div class="row" id="existing-images">
+                                    {% for img in medicine.images.all %}
+                                    <div class="col-md-3 mb-3" data-image-id="{{ img.id }}">
+                                        <div class="card">
+                                            <img src="{{ img.image.url }}" class="card-img-top" 
+                                                 style="height: 120px; object-fit: cover;" alt="{{ img.alt_text }}">
+                                            <div class="card-body p-2">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="primary_image" value="{{ img.id }}" 
+                                                           {% if img.is_primary %}checked{% endif %}
+                                                           onchange="setPrimaryImage(this)">
+                                                    <label class="form-check-label small">Primary</label>
+                                                </div>
+                                                <input type="text" class="form-control form-control-sm mb-2" 
+                                                       name="alt_text_{{ img.id }}" value="{{ img.alt_text }}" 
+                                                       placeholder="Alt text">
+                                                <button type="button" class="btn btn-sm btn-outline-danger w-100" 
+                                                        onclick="removeImage({{ img.id }})">
+                                                    <i class="fas fa-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No additional images uploaded yet</p>
+                            {% endif %}
+                            
+                            <!-- Preview Area for New Images -->
+                            <div id="image-preview" class="row mt-3" style="display: none;">
+                                <div class="col-12">
+                                    <h6>New Images Preview:</h6>
+                                    <div id="preview-container" class="row"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if medicine %}Update Medicine{% else %}Add Medicine{% endif %}
+                        </button>
+                        <a href="{% url 'admin_medicines' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        {% if medicine %}
+                            <a href="{% url 'medicine_detail' medicine.id %}" class="btn btn-info" target="_blank">
+                                <i class="fas fa-eye"></i> Preview
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Use clear, descriptive medicine names
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Include detailed descriptions with usage instructions
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Set competitive pricing
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Monitor stock levels regularly
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Upload high-quality product images
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-info text-info"></i>
+                        Manufacturer and expiry date are optional
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Verify expiry dates when provided
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        {% if medicine %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-line"></i> Medicine Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h5 text-primary">{{ medicine.orderitem_set.count }}</div>
+                        <small class="text-muted">Times Ordered</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-success">{{ medicine.orderitem_set.all|length }}</div>
+                        <small class="text-muted">Total Sold</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF Token Helper
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// Multiple Image Upload Preview
+document.getElementById('gallery_images').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    
+    // Clear previous previews
+    previewContainer.innerHTML = '';
+    
+    if (files.length > 0) {
+        imagePreview.style.display = 'block';
+        
+        Array.from(files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 mb-3';
+                    col.innerHTML = `
+                        <div class="card">
+                            <img src="${e.target.result}" class="card-img-top" 
+                                 style="height: 120px; object-fit: cover;" alt="Preview">
+                            <div class="card-body p-2">
+                                <input type="text" class="form-control form-control-sm" 
+                                       name="new_alt_text_${index}" placeholder="Alt text for this image">
+                                <small class="text-muted">${file.name}</small>
+                            </div>
+                        </div>
+                    `;
+                    previewContainer.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    } else {
+        imagePreview.style.display = 'none';
+    }
+});
+
+// Set Primary Image (only one can be primary)
+function setPrimaryImage(checkbox) {
+    if (checkbox.checked) {
+        // Uncheck all other primary checkboxes
+        document.querySelectorAll('input[name="primary_image"]').forEach(cb => {
+            if (cb !== checkbox) {
+                cb.checked = false;
+            }
+        });
+    }
+}
+
+// Remove Image Function
+function removeImage(imageId) {
+    if (confirm('Are you sure you want to remove this image?')) {
+        // Add hidden input to mark for deletion
+        const form = document.querySelector('form');
+        const deleteInput = document.createElement('input');
+        deleteInput.type = 'hidden';
+        deleteInput.name = 'delete_images';
+        deleteInput.value = imageId;
+        form.appendChild(deleteInput);
+        
+        // Hide the image card
+        const imageCard = document.querySelector(`[data-image-id="${imageId}"]`);
+        if (imageCard) {
+            imageCard.style.display = 'none';
+        }
+    }
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const galleryFiles = document.getElementById('gallery_images').files;
+    if (galleryFiles.length > 10) {
+        e.preventDefault();
+        alert('Please select no more than 10 images at once.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

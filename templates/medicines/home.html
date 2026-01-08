@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block content %}
+<!-- 1. Hero Section -->
+<div class="bg-primary text-white py-5" style="margin: -1.5rem 0 2rem 0;">
+    <div class="container text-center">
+        <h1 class="mb-3">Welcome to Tamraparni Ayurveda</h1>
+        <p class="lead mb-4">Your trusted source for authentic Ayurvedic medicines and wellness products. Natural healing, traditional wisdom, and holistic care.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'medicine_list' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-leaf me-2"></i>Shop Now
+            </a>
+        {% else %}
+            <a href="{% url 'medicine_list' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-leaf me-2"></i>Browse Products
+            </a>
+            <a href="{% url 'signup' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Join Now
+            </a>
+            <p class="mt-3 d-none d-sm-block">
+                <i class="fas fa-check-circle me-2"></i>100% Natural 
+                <i class="fas fa-check-circle ms-3 me-2"></i>Authentic Ayurvedic 
+                <i class="fas fa-check-circle ms-3 me-2"></i>Expert Consultation
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 2. Featured Medicines -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+            <h2 class="luxury-title mb-0" style="font-size: 2rem;">Featured Medicines</h2>
+            <a href="{% url 'medicine_list' %}" class="btn btn-outline-primary">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="row g-2 g-md-3">
+        {% for medicine in featured_medicines %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card medicine-card h-100">
+                    {% if medicine.image %}
+                        <img src="{{ medicine.image.url }}" class="card-img-top" alt="{{ medicine.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-gradient-to-br from-gold-50 to-gold-100 d-flex align-items-center justify-content-center" style="height: 150px; background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);">
+                            <i class="fas fa-leaf fa-2x" style="color: var(--primary-color); opacity: 0.7;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column p-2 p-md-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0 small">{{ medicine.name }}</h6>
+                            {% if medicine.prescription_type == 'RX' %}
+                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">Rx</span>
+                            {% else %}
+                                <span class="badge bg-success" style="font-size: 0.65rem;">OTC</span>
+                            {% endif %}
+                        </div>
+                        <p class="card-text small text-muted mb-1" style="font-size: 0.75rem;">{{ medicine.manufacturer }}</p>
+                        <p class="card-text small d-none d-lg-block mb-2" style="font-size: 0.75rem;">{{ medicine.description|truncatewords:6 }}</p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-primary" style="font-size: 0.9rem;">{{ medicine.price|rupees_simple }}</span>
+                                <small class="text-muted" style="font-size: 0.65rem;">
+                                    {% if medicine.stock_quantity > 10 %}
+                                        <i class="fas fa-check-circle text-success"></i> <span class="d-none d-md-inline">In Stock</span>
+                                    {% elif medicine.stock_quantity > 0 %}
+                                        <i class="fas fa-exclamation-triangle text-warning"></i> <span class="d-none d-md-inline">Low</span>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i> <span class="d-none d-md-inline">Out</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="d-grid gap-1">
+                                <a href="{% url 'medicine_detail' medicine.pk %}" class="btn btn-outline-primary btn-sm" style="font-size: 0.75rem; padding: 0.375rem 0.5rem;">
+                                    <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View</span>
+                                </a>
+                                {% if medicine.stock_quantity > 0 %}
+                                    <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 0.375rem 0.5rem;">
+                                        <i class="fas fa-cart-plus"></i> <span class="d-none d-md-inline">Add to Cart</span>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+        <div class="col-12 text-center py-4">
+            <p class="text-muted">No products available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- View All Products Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'medicine_list' %}" class="btn btn-primary btn-lg px-5" style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); border: none; color: white !important;">
+                <i class="fas fa-th-large me-2"></i>View All Products
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Shop by Category -->
+<div class="container mb-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="luxury-title" style="font-size: 2rem;">Shop by Category</h2>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="category-card animate-fade-in">
+                        {% if category.image %}
+                            <div class="category-image mb-3">
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid var(--gold-primary);">
+                            </div>
+                        {% else %}
+                            <div class="category-icon">
+                                {% if 'Pain' in category.name %}
+                                    <i class="fas fa-band-aid"></i>
+                                {% elif 'Cold' in category.name %}
+                                    <i class="fas fa-thermometer-half"></i>
+                                {% elif 'Digestive' in category.name %}
+                                    <i class="fas fa-stomach"></i>
+                                {% elif 'Vitamin' in category.name %}
+                                    <i class="fas fa-leaf"></i>
+                                {% elif 'First Aid' in category.name %}
+                                    <i class="fas fa-first-aid"></i>
+                                {% else %}
+                                    <i class="fas fa-pills"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <h6 class="fw-bold mb-2">{{ category.name }}</h6>
+                        <p class="text-muted small mb-3">{{ category.description|truncatewords:8 }}</p>
+                        <a href="{% url 'medicine_list' %}?category={{ category.id }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right me-1"></i>Browse
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Why Choose Section -->
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="luxury-title mb-3">Why Choose Tamraparni Ayurveda?</h2>
+            <p class="elegant-subtitle">Experience authentic Ayurvedic healing and wellness</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h5>100% Natural</h5>
+                <p class="text-muted">Pure Ayurvedic formulations from traditional recipes</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <h5>Authentic Products</h5>
+                <p class="text-muted">Certified Ayurvedic medicines from trusted sources</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h5>Expert Guidance</h5>
+                <p class="text-muted">Ayurvedic consultation and personalized wellness support</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Statistics Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter">1000+</div>
+                <p class="text-muted">Happy Customers</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter">500+</div>
+                <p class="text-muted">Medicines Available</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter">24/7</div>
+                <p class="text-muted">Customer Support</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter">99%</div>
+                <p class="text-muted">Satisfaction Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Testimonials Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <h2 class="luxury-title">What Our Customers Say</h2>
+            <p class="elegant-subtitle">Real experiences from real people</p>
+        </div>
+    </div>
+    
+    <!-- Display Approved Customer Feedbacks -->
+    <div class="row">
+        {% if approved_feedbacks %}
+            {% for fb in approved_feedbacks %}
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <span style="font-size: 2rem;" class="me-2">
+                            {% if fb.rating == 1 %}😞{% elif fb.rating == 2 %}😕{% elif fb.rating == 3 %}😐{% elif fb.rating == 4 %}🙂{% else %}😊{% endif %}
+                        </span>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= fb.rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if fb.feedback %}
+                    <p class="mb-3">"{{ fb.feedback|truncatewords:25 }}"</p>
+                    {% else %}
+                    <p class="mb-3 text-muted fst-italic">"{{ fb.get_rating_display }} experience!"</p>
+                    {% endif %}
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ fb.name }}</h6>
+                            <small class="text-muted">Verified Customer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Default testimonials if no approved feedbacks -->
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <p class="mb-3">"Excellent Ayurvedic products and authentic formulations. Tamraparni Ayurveda has transformed my health naturally."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Priya Sharma</h6>
+                            <small class="text-muted">Mumbai</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <p class="mb-3">"Traditional wisdom meets modern convenience. The Ayurvedic consultation helped me find the right remedies."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Rajesh Kumar</h6>
+                            <small class="text-muted">Delhi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <p class="mb-3">"Pure and effective Ayurvedic medicines. I trust Tamraparni Ayurveda for my family's wellness needs."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Anita Patel</h6>
+                            <small class="text-muted">Bangalore</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Rating Form -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <!-- Share Feedback Button -->
+            <button class="btn btn-lg px-5" id="showFeedbackBtn" onclick="toggleFeedbackForm()" style="background: linear-gradient(135deg, #8B4513, #D2691E); color: white;">
+                <i class="fas fa-comment-dots me-2"></i>Share Your Feedback
+            </button>
+            
+            <!-- Hidden Feedback Form -->
+            <div class="card mt-4" id="feedbackFormCard" style="border: 2px solid #D2691E; border-radius: 15px; display: none;">
+                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #8B4513, #D2691E); border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>Share Your Experience</h5>
+                    <button type="button" class="btn btn-sm btn-light" onclick="toggleFeedbackForm()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{% url 'submit_feedback' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Your Name *</label>
+                                <input type="text" name="name" class="form-control" required placeholder="Enter your name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Email (Optional)</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter your email">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">How was your experience? *</label>
+                            <div class="d-flex gap-2 flex-wrap justify-content-center rating-container">
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="1" id="rating1" required>
+                                    <label for="rating1">
+                                        <span class="rating-emoji">😞</span>
+                                        <span class="rating-text">Bad</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="2" id="rating2">
+                                    <label for="rating2">
+                                        <span class="rating-emoji">😕</span>
+                                        <span class="rating-text">Poor</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="3" id="rating3">
+                                    <label for="rating3">
+                                        <span class="rating-emoji">😐</span>
+                                        <span class="rating-text">Average</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="4" id="rating4">
+                                    <label for="rating4">
+                                        <span class="rating-emoji">🙂</span>
+                                        <span class="rating-text">Good</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="5" id="rating5">
+                                    <label for="rating5">
+                                        <span class="rating-emoji">😊</span>
+                                        <span class="rating-text">Excellent</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Feedback (Optional)</label>
+                            <textarea name="feedback" class="form-control" rows="3" placeholder="Tell us about your experience..."></textarea>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-lg px-5" style="background: linear-gradient(135deg, #8B4513, #D2691E); color: white;">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFeedbackForm() {
+    var formCard = document.getElementById('feedbackFormCard');
+    var btn = document.getElementById('showFeedbackBtn');
+    if (formCard.style.display === 'none') {
+        formCard.style.display = 'block';
+        btn.style.display = 'none';
+        formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        formCard.style.display = 'none';
+        btn.style.display = 'inline-block';
+    }
+}
+</script>
+
+<style>
+.rating-container {
+    gap: 10px;
+}
+.rating-box {
+    position: relative;
+}
+.rating-box input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.rating-box label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 20px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    min-width: 70px;
+}
+.rating-box label:hover {
+    border-color: #D2691E;
+    transform: scale(1.05);
+}
+.rating-box .rating-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    display: block;
+}
+.rating-box .rating-text {
+    font-size: 0.85rem;
+    color: #666;
+    display: block;
+}
+.rating-box input[type="radio"]:checked + label {
+    border-color: #8B4513;
+    background: linear-gradient(135deg, #fff5eb, #ffe4c4);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+.rating-box input[type="radio"]:checked + label .rating-text {
+    color: #8B4513;
+    font-weight: bold;
+}
+</style>
+
+<!-- 7. Call to Action -->
+<div class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h3 class="mb-3">Ready to Experience Natural Healing?</h3>
+        <p class="lead mb-4">Join thousands who trust Tamraparni Ayurveda for holistic wellness</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'signup' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-user-plus me-2"></i>Sign Up Now
+            </a>
+            <a href="{% url 'medicine_list' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-leaf me-2"></i>Browse Products
+            </a>
+        {% else %}
+            <a href="{% url 'medicine_list' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-spa me-2"></i>Start Shopping
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

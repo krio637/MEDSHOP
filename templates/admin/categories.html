@@ -1,0 +1,942 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}Manage Categories{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="fas fa-plus-circle"></i> Add New Category
+    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#quickAddCategoryModal">
+        <i class="fas fa-bolt"></i> Quick Add
+    </button>
+    <div class="dropdown">
+        <button class="btn btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-trash"></i> Delete Options
+        </button>
+        <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Bulk Actions</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="deleteEmptyCategories()">
+                <i class="fas fa-trash text-warning"></i> Delete Empty Categories
+            </a></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#bulkDeleteCategoriesModal">
+                <i class="fas fa-trash-alt text-danger"></i> Advanced Delete
+            </a></li>
+        </ul>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-warning dropdown-toggle" type="button" id="categoryToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false" onclick="console.log('Category Tools clicked')">
+            <i class="fas fa-magic"></i> Category Tools
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="categoryToolsDropdown">
+            <li><h6 class="dropdown-header">Quick Setup</h6></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#categoryTemplatesModal">
+                <i class="fas fa-layer-group text-primary"></i> Use Templates
+            </a></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#bulkAddCategoriesModal">
+                <i class="fas fa-list text-success"></i> Bulk Add Categories
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Organization</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="sortCategories()">
+                <i class="fas fa-sort text-info"></i> Sort Categories
+            </a></li>
+        </ul>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-info dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-download"></i> Export
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+            <li><a class="dropdown-item" href="#" onclick="exportCategories('csv')">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportCategories('pdf')">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Categories Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ categories|length }}</h4>
+                        <p class="mb-0">Total Categories</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="activeCategoriesCount">0</h4>
+                        <p class="mb-0">Active Categories</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="totalProductsCount">0</h4>
+                        <p class="mb-0">Total Products</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="emptyCategoriesCount">0</h4>
+                        <p class="mb-0">Empty Categories</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search Categories</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
+                       placeholder="Search by name or description...">
+            </div>
+            <div class="col-md-3">
+                <label for="status_filter" class="form-label">Status</label>
+                <select class="form-select" id="status_filter" name="status">
+                    <option value="">All Categories</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active (with products)</option>
+                    <option value="empty" {% if status_filter == 'empty' %}selected{% endif %}>Empty (no products)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="sort_by" class="form-label">Sort By</label>
+                <select class="form-select" id="sort_by" name="sort">
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_categories' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Categories Management</h5>
+        <small class="text-muted">{{ categories|length }} categories found</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllCategories"></th>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Products</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>
+                            {% if category.medicine_count == 0 %}
+                                <input type="checkbox" name="category_ids" value="{{ category.id }}" class="category-checkbox">
+                            {% else %}
+                                <input type="checkbox" disabled title="Cannot select - has products">
+                            {% endif %}
+                        </td>
+                        <td>{{ category.id }}</td>
+                        <td>
+                            {% if category.image %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" 
+                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                            {% else %}
+                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #FFD700, #8B4513); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image text-white"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ category.name }}</strong>
+                            {% if category.description %}
+                                <br><small class="text-muted">{{ category.description|truncatewords:5 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ category.description|truncatewords:10|default:"No description" }}</td>
+                        <td>
+                            <a href="{% url 'admin_medicines' %}?category={{ category.id }}" class="text-decoration-none">
+                                <span class="badge {% if category.medicine_count > 0 %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ category.medicine_count }} products
+                                </span>
+                            </a>
+                        </td>
+                        <td>
+                            {% if category.medicine_count > 0 %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-warning">Empty</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ category.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="editCategory({{ category.id }}, '{{ category.name|escapejs }}', '{{ category.description|escapejs }}', '{% if category.image %}{{ category.image.url }}{% endif %}')"
+                                        title="Edit Category">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="{% url 'admin_medicines' %}?category={{ category.id }}" 
+                                   class="btn btn-sm btn-outline-info" title="View Products">
+                                    <i class="fas fa-pills"></i>
+                                </a>
+                                <a href="{% url 'admin_medicine_add' %}?category={{ category.id }}" 
+                                   class="btn btn-sm btn-outline-success" title="Add Product to Category">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                {% if category.medicine_count == 0 %}
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteCategory({{ category.id }}, '{{ category.name|escapejs }}')"
+                                        title="Delete Category">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary" disabled title="Cannot delete - has {{ category.medicine_count }} product(s)">
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No categories found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="add_name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="add_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="add_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_image" class="form-label">Category Image</label>
+                        <input type="file" class="form-control" id="add_image" name="image" accept="image/*">
+                        <small class="text-muted">Upload an image for this category (optional)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="category_id" id="edit_category_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div id="edit_current_image" class="mb-2"></div>
+                        <label for="edit_image" class="form-label">Change Image</label>
+                        <input type="file" class="form-control" id="edit_image" name="image" accept="image/*">
+                        <small class="text-muted">Upload a new image to replace the current one</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Category Modal -->
+<div class="modal fade" id="quickAddCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bolt text-success"></i> Quick Add Category
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Quick Add:</strong> Just enter the category name. You can add description later.
+                    </div>
+                    <div class="mb-3">
+                        <label for="quick_add_name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="quick_add_name" name="name" required 
+                               placeholder="e.g., Pain Relief, Vitamins, Antibiotics...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Categories Modal -->
+<div class="modal fade" id="bulkDeleteCategoriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Bulk Delete Categories
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning"></i>
+                    <strong>Warning:</strong> This will permanently delete categories. Only empty categories can be deleted.
+                </div>
+                
+                <div class="mb-3" id="bulkDeleteCategoriesList">
+                    <label class="form-label">Select empty categories to delete:</label>
+                    <div id="emptyCategoriesList">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="executeBulkDeleteCategories()">
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Templates Modal -->
+<div class="modal fade" id="categoryTemplatesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-templates text-primary"></i> Category Templates
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Quick Setup:</strong> Select pre-defined category sets to add to your store.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">🏥 Basic Pharmacy Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="basic_pharmacy" name="template_sets" value="basic_pharmacy">
+                                    <label class="form-check-label" for="basic_pharmacy">
+                                        <strong>Add Basic Set</strong><br>
+                                        <small class="text-muted">Pain Relief, Cold & Flu, Vitamins, First Aid, Prescription</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">💊 Comprehensive Medicine Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="comprehensive" name="template_sets" value="comprehensive">
+                                    <label class="form-check-label" for="comprehensive">
+                                        <strong>Add Comprehensive Set</strong><br>
+                                        <small class="text-muted">15+ categories including Antibiotics, Diabetes Care, Heart Health, etc.</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">🌿 Ayurvedic & Natural</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ayurvedic" name="template_sets" value="ayurvedic">
+                                    <label class="form-check-label" for="ayurvedic">
+                                        <strong>Add Ayurvedic Set</strong><br>
+                                        <small class="text-muted">Herbal Medicines, Ayurvedic Oils, Natural Supplements</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">👶 Family Care Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="family_care" name="template_sets" value="family_care">
+                                    <label class="form-check-label" for="family_care">
+                                        <strong>Add Family Care Set</strong><br>
+                                        <small class="text-muted">Baby Care, Women's Health, Men's Health, Senior Care</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addCategoryTemplates()">
+                    <i class="fas fa-plus"></i> Add Selected Categories
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Add Categories Modal -->
+<div class="modal fade" id="bulkAddCategoriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-list text-success"></i> Bulk Add Categories
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="bulk_add">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Bulk Add:</strong> Enter category names, one per line. Descriptions are optional.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulk_categories" class="form-label">Category Names *</label>
+                        <textarea class="form-control" id="bulk_categories" name="bulk_categories" rows="8" required
+                                  placeholder="Pain Relief&#10;Cold & Flu&#10;Vitamins & Supplements&#10;First Aid&#10;Prescription Medicines&#10;..."></textarea>
+                        <small class="text-muted">Enter one category name per line</small>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="auto_descriptions" name="auto_descriptions" checked>
+                        <label class="form-check-label" for="auto_descriptions">
+                            Auto-generate descriptions for categories
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Categories
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="category_id" id="delete_category_id">
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the category "<span id="delete_category_name"></span>"?</p>
+                    <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editCategory(id, name, description, imageUrl) {
+    document.getElementById('edit_category_id').value = id;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_description').value = description || '';
+    
+    // Show current image
+    const currentImageDiv = document.getElementById('edit_current_image');
+    if (imageUrl) {
+        currentImageDiv.innerHTML = `<img src="${imageUrl}" alt="${name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">`;
+    } else {
+        currentImageDiv.innerHTML = '<span class="text-muted">No image uploaded</span>';
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+    modal.show();
+}
+
+function deleteCategory(id, name) {
+    document.getElementById('delete_category_id').value = id;
+    document.getElementById('delete_category_name').textContent = name;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
+    modal.show();
+}
+
+function deleteEmptyCategories() {
+    if (confirm('Delete all empty categories? This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "admin_categories" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'delete_empty';
+        
+        form.appendChild(csrfInput);
+        form.appendChild(actionInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function populateBulkDeleteModal() {
+    const emptyCategoriesList = document.getElementById('emptyCategoriesList');
+    emptyCategoriesList.innerHTML = '';
+    
+    // Find all empty categories from the table
+    const rows = document.querySelectorAll('tbody tr');
+    let hasEmptyCategories = false;
+    
+    rows.forEach(row => {
+        const productsBadge = row.querySelector('td:nth-child(5) .badge');
+        if (productsBadge && productsBadge.textContent.includes('0 products')) {
+            hasEmptyCategories = true;
+            const categoryId = row.querySelector('.category-checkbox').value;
+            const categoryName = row.querySelector('td:nth-child(3) strong').textContent;
+            
+            const checkDiv = document.createElement('div');
+            checkDiv.className = 'form-check';
+            checkDiv.innerHTML = `
+                <input class="form-check-input" type="checkbox" name="bulk_category_ids" value="${categoryId}" id="bulk_cat_${categoryId}">
+                <label class="form-check-label" for="bulk_cat_${categoryId}">
+                    ${categoryName} <span class="badge bg-secondary">Empty</span>
+                </label>
+            `;
+            emptyCategoriesList.appendChild(checkDiv);
+        }
+    });
+    
+    if (!hasEmptyCategories) {
+        emptyCategoriesList.innerHTML = '<p class="text-muted">No empty categories available for deletion.</p>';
+    }
+}
+
+function executeBulkDeleteCategories() {
+    const selectedCategories = document.querySelectorAll('input[name="bulk_category_ids"]:checked');
+    if (selectedCategories.length === 0) {
+        alert('Please select categories to delete.');
+        return;
+    }
+    
+    if (confirm(`Delete ${selectedCategories.length} selected categories? This cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "admin_categories" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'bulk_delete';
+        
+        form.appendChild(csrfInput);
+        form.appendChild(actionInput);
+        
+        selectedCategories.forEach(checkbox => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'category_ids';
+            hiddenInput.value = checkbox.value;
+            form.appendChild(hiddenInput);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Populate bulk delete modal when it's opened
+document.addEventListener('DOMContentLoaded', function() {
+    const bulkDeleteModal = document.getElementById('bulkDeleteCategoriesModal');
+    if (bulkDeleteModal) {
+        bulkDeleteModal.addEventListener('show.bs.modal', populateBulkDeleteModal);
+    }
+});
+
+function exportCategories(format) {
+    const url = `{% url 'admin_generate_report' %}?type=categories&format=${format}`;
+    window.open(url, '_blank');
+}
+
+function addCategoryTemplates() {
+    const selectedTemplates = document.querySelectorAll('input[name="template_sets"]:checked');
+    if (selectedTemplates.length === 0) {
+        alert('Please select at least one template set.');
+        return;
+    }
+    
+    const templateSets = {
+        'basic_pharmacy': [
+            'Pain Relief',
+            'Cold & Flu',
+            'Vitamins & Supplements',
+            'First Aid',
+            'Prescription Medicines'
+        ],
+        'comprehensive': [
+            'Antibiotics',
+            'Diabetes Care',
+            'Heart Health',
+            'Blood Pressure',
+            'Digestive Health',
+            'Skin Care',
+            'Eye Care',
+            'Respiratory Care',
+            'Mental Health',
+            'Bone & Joint Health',
+            'Liver Care',
+            'Kidney Care',
+            'Immunity Boosters',
+            'Weight Management',
+            'Sleep Aids'
+        ],
+        'ayurvedic': [
+            'Herbal Medicines',
+            'Ayurvedic Oils',
+            'Natural Supplements',
+            'Organic Products',
+            'Traditional Remedies'
+        ],
+        'family_care': [
+            'Baby Care',
+            'Women\'s Health',
+            'Men\'s Health',
+            'Senior Care',
+            'Pregnancy Care'
+        ]
+    };
+    
+    let categoriesToAdd = [];
+    selectedTemplates.forEach(template => {
+        categoriesToAdd = categoriesToAdd.concat(templateSets[template.value]);
+    });
+    
+    if (confirm(`Add ${categoriesToAdd.length} categories from selected templates?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "admin_categories" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'add_templates';
+        
+        const categoriesInput = document.createElement('input');
+        categoriesInput.type = 'hidden';
+        categoriesInput.name = 'template_categories';
+        categoriesInput.value = JSON.stringify(categoriesToAdd);
+        
+        form.appendChild(csrfInput);
+        form.appendChild(actionInput);
+        form.appendChild(categoriesInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function sortCategories() {
+    if (confirm('Sort categories alphabetically? This will reorder all categories.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "admin_categories" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'sort_categories';
+        
+        form.appendChild(csrfInput);
+        form.appendChild(actionInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Select all functionality
+const selectAllCheckbox = document.getElementById('selectAllCategories');
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.category-checkbox');
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.disabled) {
+                checkbox.checked = this.checked;
+            }
+        });
+    });
+}
+
+// Calculate and display statistics
+function calculateCategoryStats() {
+    let activeCount = 0;
+    let totalProducts = 0;
+    let emptyCount = 0;
+    
+    // Count from table rows
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const productsBadge = row.querySelector('td:nth-child(5) .badge');
+        if (productsBadge) {
+            const productCount = parseInt(productsBadge.textContent.match(/\d+/)[0]);
+            totalProducts += productCount;
+            
+            if (productCount > 0) {
+                activeCount++;
+            } else {
+                emptyCount++;
+            }
+        }
+    });
+    
+    // Update the statistics cards
+    document.getElementById('activeCategoriesCount').textContent = activeCount;
+    document.getElementById('totalProductsCount').textContent = totalProducts;
+    document.getElementById('emptyCategoriesCount').textContent = emptyCount;
+}
+
+// Update select all when individual checkboxes change
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Check if Bootstrap is loaded
+    console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+    console.log('jQuery loaded:', typeof $ !== 'undefined');
+    
+    // Test dropdown functionality
+    const categoryToolsBtn = document.getElementById('categoryToolsDropdown');
+    if (categoryToolsBtn) {
+        console.log('Category Tools button found');
+        categoryToolsBtn.addEventListener('click', function() {
+            console.log('Category Tools button clicked');
+        });
+    } else {
+        console.log('Category Tools button NOT found');
+    }
+    
+    // Calculate stats on page load
+    calculateCategoryStats();
+    
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allCheckboxes = document.querySelectorAll('.category-checkbox:not(:disabled)');
+            const checkedCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+            const selectAll = document.getElementById('selectAllCategories');
+            
+            if (selectAll) {
+                selectAll.checked = allCheckboxes.length === checkedCheckboxes.length;
+            }
+        });
+    });
+});
+</script>
+
+<!-- Floating Action Button for Mobile -->
+<div class="d-md-none">
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <button class="btn btn-primary btn-lg rounded-circle shadow" 
+                data-bs-toggle="modal" data-bs-target="#quickAddCategoryModal"
+                style="width: 60px; height: 60px;">
+            <i class="fas fa-plus fa-lg"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+.category-checkbox:disabled {
+    opacity: 0.3;
+}
+.btn-group .btn {
+    margin-right: 2px;
+}
+.table td {
+    vertical-align: middle;
+}
+
+/* Ensure dropdowns are visible */
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.dropdown-toggle::after {
+    display: inline-block !important;
+    margin-left: 0.255em !important;
+    vertical-align: 0.255em !important;
+    content: "" !important;
+    border-top: 0.3em solid !important;
+    border-right: 0.3em solid transparent !important;
+    border-bottom: 0 !important;
+    border-left: 0.3em solid transparent !important;
+}
+
+/* Debug styles */
+.dropdown {
+    position: relative !important;
+}
+
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+}
+</style>
+{% endblock %}

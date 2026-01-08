@@ -1,0 +1,154 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Media Videos - Admin{% endblock %}
+{% block page_title %}Media Videos{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <span class="badge bg-primary me-2">{{ total_videos }} Total</span>
+        <span class="badge bg-success me-2">{{ active_videos }} Active</span>
+        <span class="badge bg-warning">{{ featured_videos }} Featured</span>
+    </div>
+    <a href="{% url 'admin_media_add' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add Video
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Search videos..." value="{{ search|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for value, label in video_type_choices %}
+                    <option value="{{ value }}" {% if video_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="featured" {% if status == 'featured' %}selected{% endif %}>Featured</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_media' %}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Videos Grid -->
+<div class="row">
+    {% for video in videos %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="position-relative">
+                {% if video.thumbnail %}
+                <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}" style="height: 200px; object-fit: cover;">
+                {% elif video.video_file %}
+                <video class="card-img-top" style="height: 200px; object-fit: cover;">
+                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                </video>
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-video fa-3x text-white"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Badges -->
+                <div class="position-absolute top-0 start-0 p-2">
+                    <span class="badge bg-info">{{ video.get_video_type_display }}</span>
+                    {% if video.is_featured %}
+                    <span class="badge bg-warning"><i class="fas fa-star"></i> Featured</span>
+                    {% endif %}
+                </div>
+                <div class="position-absolute top-0 end-0 p-2">
+                    {% if video.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-danger">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <h5 class="card-title">{{ video.title }}</h5>
+                {% if video.description %}
+                <p class="card-text small text-muted">{{ video.description|truncatewords:15 }}</p>
+                {% endif %}
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-sort-numeric-up me-1"></i>Order: {{ video.order }}
+                        <br>
+                        <i class="fas fa-calendar me-1"></i>{{ video.created_at|date:"M d, Y" }}
+                    </small>
+                </p>
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'admin_media_edit' video.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'admin_media_delete' video.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-video fa-3x mb-3"></i>
+            <h5>No Videos Yet</h5>
+            <p>Start by adding your first video or reel.</p>
+            <a href="{% url 'admin_media_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Video
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if videos.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if videos.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ videos.previous_page_number }}&type={{ video_type|default:'' }}&status={{ status|default:'' }}&search={{ search|default:'' }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in videos.paginator.page_range %}
+        <li class="page-item {% if videos.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}&type={{ video_type|default:'' }}&status={{ status|default:'' }}&search={{ search|default:'' }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        
+        {% if videos.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ videos.next_page_number }}&type={{ video_type|default:'' }}&status={{ status|default:'' }}&search={{ search|default:'' }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

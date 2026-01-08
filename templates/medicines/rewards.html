@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Rewards - Tamraparni Ayurveda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-gift me-2"></i>Rewards Program</h2>
+                <p class="text-muted mb-0">Earn Points, Get Rewards</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h4>Tamraparni Rewards</h4>
+                        <p>Join our rewards program and earn points on every purchase. Redeem your points for discounts on future orders!</p>
+
+                        <h4 class="mt-4">How It Works</h4>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-shopping-cart fa-2x text-primary mb-3"></i>
+                                        <h5>1. Shop</h5>
+                                        <p class="small">Make purchases on our website</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-coins fa-2x text-primary mb-3"></i>
+                                        <h5>2. Earn</h5>
+                                        <p class="small">Get points on every order</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-tag fa-2x text-primary mb-3"></i>
+                                        <h5>3. Redeem</h5>
+                                        <p class="small">Use points for discounts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4">Earning Points</h4>
+                        <ul>
+                            <li><strong>₹1 = 1 Point</strong> on every purchase</li>
+                            <li><strong>Bonus Points</strong> on special promotions</li>
+                            <li><strong>Birthday Bonus</strong> - Extra points on your birthday</li>
+                            <li><strong>Referral Bonus</strong> - Earn when friends sign up</li>
+                        </ul>
+
+                        <h4 class="mt-4">Redeeming Points</h4>
+                        <ul>
+                            <li>100 Points = ₹10 discount</li>
+                            <li>Minimum 200 points required for redemption</li>
+                            <li>Points valid for 12 months from earning date</li>
+                        </ul>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Coming Soon:</strong> Our rewards program is launching soon! Create an account to be notified when it goes live.
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

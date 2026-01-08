@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Order History - Tamraparni Ayurveda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-history me-2"></i>Order History</h2>
+        <p class="text-muted">Track and manage all your orders</p>
+        
+        {% if orders %}
+            <div class="row">
+                {% for order in orders %}
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <h6 class="mb-0">Order #{{ order.id }}</h6>
+                                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="fw-bold">{{ order.total_amount|rupees_simple }}</div>
+                                    <small class="text-muted">{{ order.items.count }} item{{ order.items.count|pluralize }}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge 
+                                        {% if order.status == 'PENDING' %}bg-warning
+                                        {% elif order.status == 'CONFIRMED' %}bg-info
+                                        {% elif order.status == 'SHIPPED' %}bg-primary
+                                        {% elif order.status == 'DELIVERED' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for item in order.items.all|slice:":3" %}
+                                <div class="col-md-4 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if item.medicine.image %}
+                                            <img src="{{ item.medicine.image.url }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ item.medicine.name }}">
+                                        {% else %}
+                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i class="fas fa-pills text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0 small">{{ item.medicine.name }}</h6>
+                                            <small class="text-muted">Qty: {{ item.quantity }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if order.items.count > 3 %}
+                                <div class="col-md-4 mb-2">
+                                    <div class="text-muted">
+                                        <i class="fas fa-plus-circle me-2"></i>
+                                        {{ order.items.count|add:"-3" }} more item{{ order.items.count|add:"-3"|pluralize }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if order.status == 'PENDING' %}
+                            <div class="alert alert-warning small mt-3 mb-0">
+                                <i class="fas fa-clock me-2"></i>
+                                Your order is being processed. We'll update you once it's confirmed.
+                            </div>
+                            {% elif order.status == 'CONFIRMED' %}
+                            <div class="alert alert-info small mt-3 mb-0">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Your order has been confirmed and is being prepared for shipment.
+                            </div>
+                            {% elif order.status == 'SHIPPED' %}
+                            <div class="alert alert-primary small mt-3 mb-0">
+                                <i class="fas fa-shipping-fast me-2"></i>
+                                Your order is on its way! Expected delivery in 1-2 days.
+                            </div>
+                            {% elif order.status == 'DELIVERED' %}
+                            <div class="alert alert-success small mt-3 mb-0">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Order delivered successfully on {{ order.updated_at|date:"M d, Y" }}.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination if needed -->
+            {% comment %}
+            <nav aria-label="Order history pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">1</span>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endcomment %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-bag fa-5x text-muted mb-4"></i>
+                <h3>No Orders Yet</h3>
+                <p class="text-muted mb-4">You haven't placed any orders yet. Start shopping for authentic Ayurvedic medicines!</p>
+                <a href="{% url 'medicine_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-pills me-2"></i>Start Shopping
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,265 @@
+/* White Text Theme Override for Tamraparni Ayurveda */
+
+/* Global White Text Override */
+* {
+    color: white !important;
+}
+
+/* Body and Base Elements */
+body, html {
+    color: white !important;
+    background: #333 !important; /* Dark background for better contrast */
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: white !important;
+}
+
+/* Paragraphs and Text */
+p, span, div, a, li, td, th, label {
+    color: white !important;
+}
+
+/* Links */
+a, a:hover, a:focus, a:visited {
+    color: white !important;
+    text-decoration: underline;
+}
+
+/* Navigation */
+.navbar, .navbar-brand, .nav-link {
+    color: white !important;
+}
+
+.navbar {
+    background: #222 !important;
+}
+
+/* Cards and Content Areas */
+.card, .card-body, .card-header, .card-title, .card-text {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Forms */
+.form-control, .form-select, .form-label {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: white !important;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Buttons */
+.btn {
+    color: white !important;
+    border-color: white !important;
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: white !important;
+}
+
+.btn-outline-primary {
+    color: white !important;
+    border-color: white !important;
+}
+
+/* Tables */
+.table, .table th, .table td {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Alerts */
+.alert {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    border-color: white !important;
+}
+
+/* Badges */
+.badge {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Dropdowns */
+.dropdown-menu, .dropdown-item {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Footer */
+.bg-dark, footer {
+    background: #111 !important;
+}
+
+/* Admin Panel Specific */
+.sidebar {
+    background: #222 !important;
+}
+
+.main-content {
+    background: #333 !important;
+}
+
+/* Text Utilities Override */
+.text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.text-primary {
+    color: white !important;
+}
+
+.text-secondary {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.text-success {
+    color: #90EE90 !important;
+}
+
+.text-danger {
+    color: #FFB6C1 !important;
+}
+
+.text-warning {
+    color: #FFFFE0 !important;
+}
+
+.text-info {
+    color: #ADD8E6 !important;
+}
+
+/* Input Groups */
+.input-group-text {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: white !important;
+}
+
+/* Pagination */
+.page-link {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: white !important;
+}
+
+.page-item.active .page-link {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: white !important;
+}
+
+/* Modal */
+.modal-content, .modal-header, .modal-body, .modal-footer {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Breadcrumb */
+.breadcrumb, .breadcrumb-item {
+    color: white !important;
+}
+
+/* List Groups */
+.list-group-item {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Progress Bars */
+.progress {
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.progress-bar {
+    color: white !important;
+}
+
+/* Tooltips and Popovers */
+.tooltip-inner {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+}
+
+.popover {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Specific Medicine Shop Elements */
+.medicine-card, .category-card, .stats-card {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+
+.hero-section {
+    color: white !important;
+    background: #222 !important;
+}
+
+/* Price and Currency */
+.price, .currency {
+    color: #90EE90 !important; /* Light green for prices */
+}
+
+/* Stock Status */
+.stock-status {
+    color: white !important;
+}
+
+/* Search Results */
+.search-result {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Chat Widget */
+.chat-widget, .chat-box, .chat-message {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Ensure readability on all backgrounds */
+.bg-light, .bg-white {
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+.bg-primary, .bg-secondary, .bg-success, .bg-danger, .bg-warning, .bg-info {
+    color: white !important;
+}
+
+/* Override any remaining dark text */
+.text-dark, .text-black {
+    color: white !important;
+}
+
+/* Special cases for better visibility */
+.navbar-toggler-icon {
+    filter: invert(1) !important;
+}
+
+/* Ensure form validation text is visible */
+.invalid-feedback, .valid-feedback {
+    color: white !important;
+}
+
+/* Make sure icons are visible */
+.fas, .far, .fab {
+    color: white !important;
+}

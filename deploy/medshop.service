@@ -1,0 +1,17 @@
+[Unit]
+Description=Medshop Gunicorn Daemon
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/medshop
+Environment="PATH=/var/www/medshop/venv/bin"
+EnvironmentFile=/var/www/medshop/.env
+ExecStart=/var/www/medshop/venv/bin/gunicorn --config /var/www/medshop/deploy/gunicorn.conf.py medshop.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

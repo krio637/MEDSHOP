@@ -1,0 +1,166 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Tamraparni Ayurveda Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'images/tamraparni-logo.jpg' %}" alt="Logo" style="height: 40px; width: auto; border-radius: 8px; margin-right: 10px; vertical-align: middle;">
+        Tamraparni Ayurveda
+    </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #8B4513;
+        --secondary: #A0522D;
+        --accent: #FFD700;
+        --dark: #3E2723;
+        --light: #FFF8DC;
+    }
+    
+    /* Header */
+    #header {
+        background: linear-gradient(135deg, #FFD700 0%, #A0522D 50%, #8B4513 100%) !important;
+        color: #3E2723 !important;
+    }
+    
+    #header a:link, #header a:visited {
+        color: #3E2723 !important;
+    }
+    
+    #branding h1 {
+        font-family: 'Playfair Display', Georgia, serif !important;
+        font-weight: 700 !important;
+        font-size: 1.8rem !important;
+    }
+    
+    #branding h1 a:link, #branding h1 a:visited {
+        color: #3E2723 !important;
+    }
+    
+    /* User tools */
+    #user-tools {
+        font-family: 'Lora', Georgia, serif !important;
+        font-weight: 600 !important;
+    }
+    
+    #user-tools a {
+        color: #3E2723 !important;
+        border-color: #3E2723 !important;
+    }
+    
+    /* Sidebar / Module headers */
+    .module h2, .module caption, .inline-group h2 {
+        background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+        color: white !important;
+        font-family: 'Playfair Display', Georgia, serif !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Links */
+    a:link, a:visited {
+        color: #8B4513;
+    }
+    
+    a:hover {
+        color: #654321;
+    }
+    
+    /* Buttons */
+    .submit-row input, .button, input[type=submit], input[type=button], .submit-row input.default {
+        background: linear-gradient(135deg, #FFD700 0%, #A0522D 100%) !important;
+        color: #3E2723 !important;
+        border: none !important;
+        font-family: 'Lora', Georgia, serif !important;
+        font-weight: 600 !important;
+    }
+    
+    .submit-row input:hover, .button:hover, input[type=submit]:hover {
+        background: linear-gradient(135deg, #A0522D 0%, #8B4513 100%) !important;
+        color: white !important;
+    }
+    
+    /* Delete button */
+    .deletelink {
+        background: #dc3545 !important;
+    }
+    
+    /* Breadcrumbs */
+    div.breadcrumbs {
+        background: #654321 !important;
+        color: #FFD700 !important;
+    }
+    
+    div.breadcrumbs a:link, div.breadcrumbs a:visited {
+        color: #FFD700 !important;
+    }
+    
+    /* Calendar and date widgets */
+    .calendar caption, .calendarbox h2 {
+        background: #8B4513 !important;
+        color: white !important;
+    }
+    
+    .calendar td a:hover {
+        background: #FFD700 !important;
+        color: #3E2723 !important;
+    }
+    
+    /* Selected row */
+    .row-selected {
+        background: #FFF8DC !important;
+    }
+    
+    /* Object tools */
+    .object-tools a:link, .object-tools a:visited {
+        background: #8B4513 !important;
+    }
+    
+    .object-tools a:hover {
+        background: #654321 !important;
+    }
+    
+    /* Dashboard recent actions */
+    #recent-actions-module h2 {
+        background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+    }
+    
+    /* Form rows */
+    .form-row {
+        border-bottom-color: #D2B48C !important;
+    }
+    
+    /* Fieldsets */
+    fieldset.module h2 {
+        background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+    }
+    
+    /* Pagination */
+    .paginator a:link, .paginator a:visited {
+        background: #8B4513 !important;
+        color: white !important;
+    }
+    
+    .paginator a:hover {
+        background: #654321 !important;
+    }
+    
+    /* Change list filters */
+    #changelist-filter h2 {
+        background: #8B4513 !important;
+    }
+    
+    #changelist-filter li.selected a {
+        color: #8B4513 !important;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

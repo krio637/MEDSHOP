@@ -1,0 +1,675 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}{{ medicine.name }} - Tamraparni Ayurveda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <!-- Main Image Carousel -->
+        <div class="card">
+            {% if medicine.images.exists or medicine.image %}
+                <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        {% if medicine.image %}
+                            <div class="carousel-item active">
+                                <img src="{{ medicine.image.url }}" class="d-block w-100" 
+                                     alt="{{ medicine.name }}" 
+                                     style="height: 400px; object-fit: cover; cursor: pointer;"
+                                     data-bs-toggle="modal" data-bs-target="#imageModal">
+                            </div>
+                        {% endif %}
+                        {% for img in medicine.images.all %}
+                            <div class="carousel-item {% if not medicine.image and forloop.first %}active{% endif %}">
+                                <img src="{{ img.image.url }}" class="d-block w-100" 
+                                     alt="{{ img.alt_text|default:medicine.name }}" 
+                                     style="height: 400px; object-fit: cover; cursor: pointer;"
+                                     data-bs-toggle="modal" data-bs-target="#imageModal">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if medicine.images.count > 0 or medicine.image and medicine.images.exists %}
+                        <!-- Carousel Controls -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(139, 69, 19, 0.8); border-radius: 50%; padding: 20px;"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(139, 69, 19, 0.8); border-radius: 50%; padding: 20px;"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-pills fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Thumbnail Navigation -->
+        {% if medicine.images.count > 0 or medicine.image %}
+            <div class="mt-3">
+                <div class="d-flex flex-wrap gap-2 justify-content-center" id="thumbnailContainer">
+                    {% if medicine.image %}
+                        <div class="thumbnail-wrapper">
+                            <img src="{{ medicine.image.url }}" 
+                                 alt="{{ medicine.name }}"
+                                 class="thumbnail-image active"
+                                 onclick="goToSlide(0)"
+                                 style="width: 70px; height: 70px; object-fit: cover; cursor: pointer; border: 3px solid #8B4513; border-radius: 8px; transition: all 0.3s ease;">
+                        </div>
+                    {% endif %}
+                    {% for img in medicine.images.all %}
+                        <div class="thumbnail-wrapper">
+                            <img src="{{ img.image.url }}" 
+                                 alt="{{ img.alt_text|default:medicine.name }}"
+                                 class="thumbnail-image"
+                                 onclick="goToSlide({% if medicine.image %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %})"
+                                 style="width: 70px; height: 70px; object-fit: cover; cursor: pointer; border: 3px solid transparent; border-radius: 8px; transition: all 0.3s ease;">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-6">
+        <div class="mb-3">
+            {% if medicine.prescription_type == 'RX' %}
+                <span class="badge bg-warning fs-6">Prescription Required</span>
+            {% else %}
+                <span class="badge bg-success fs-6">Over the Counter</span>
+            {% endif %}
+        </div>
+        
+        <h1 class="h2 mb-3">{{ medicine.name }}</h1>
+        
+        <div class="mb-3">
+            <p class="text-muted mb-1">
+                <i class="fas fa-industry me-2"></i>Manufactured by: <strong>{{ medicine.manufacturer }}</strong>
+            </p>
+            <p class="text-muted mb-1">
+                <i class="fas fa-tags me-2"></i>Category: <strong>{{ medicine.category.name }}</strong>
+            </p>
+            <p class="text-muted">
+                <i class="fas fa-calendar-alt me-2"></i>Expires: <strong>{{ medicine.expiry_date|date:"M d, Y" }}</strong>
+            </p>
+        </div>
+        
+        <div class="mb-4">
+            <div class="d-flex align-items-center mb-2">
+                {% if medicine.mrp and medicine.mrp > medicine.price %}
+                    <span class="text-muted text-decoration-line-through me-2">₹{{ medicine.mrp }}</span>
+                    <span class="badge bg-danger me-2">{{ medicine.discount_percentage }}% OFF</span>
+                {% endif %}
+            </div>
+            <div class="h3 text-primary mb-0">{{ medicine.price|rupees_simple }}</div>
+            {% if medicine.mrp and medicine.mrp > medicine.price %}
+                <small class="text-success">You save {{ medicine.savings|rupees_simple }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="mb-4">
+            <h5>Stock Status</h5>
+            {% if medicine.stock_quantity > 10 %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>In Stock ({{ medicine.stock_quantity }} available)
+                </div>
+            {% elif medicine.stock_quantity > 0 %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Limited Stock (Only {{ medicine.stock_quantity }} left)
+                </div>
+            {% else %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>Out of Stock
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-4">
+            {% if medicine.stock_quantity > 0 %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'add_to_cart' medicine.id %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if medicine.prescription_type == 'RX' %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Prescription Required:</strong> This medicine requires a valid prescription from a registered medical practitioner.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Product Description</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ medicine.description }}</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6>Product Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ medicine.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ medicine.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manufacturer:</strong></td>
+                                <td>{{ medicine.manufacturer }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td>{{ medicine.get_prescription_type_display }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Pricing & Availability</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Price:</strong></td>
+                                <td>{{ medicine.price|rupees_simple }}</td>
+                            </tr>
+                            {% if medicine.mrp and medicine.mrp > medicine.price %}
+                            <tr>
+                                <td><strong>MRP:</strong></td>
+                                <td class="text-muted text-decoration-line-through">{{ medicine.mrp|rupees_simple }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Discount:</strong></td>
+                                <td class="text-success">{{ medicine.discount_percentage }}% OFF</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Stock:</strong></td>
+                                <td>
+                                    {% if medicine.stock_quantity > 0 %}
+                                        <span class="text-success">{{ medicine.stock_quantity }} available</span>
+                                    {% else %}
+                                        <span class="text-danger">Out of stock</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Expiry:</strong></td>
+                                <td>{{ medicine.expiry_date|date:"M d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h4 class="mb-4">Related Products</h4>
+        <div class="row">
+            {% for related_medicine in medicine.category.medicine_set.all|slice:":4" %}
+                {% if related_medicine.id != medicine.id and related_medicine.is_active %}
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="card h-100">
+                        {% if related_medicine.image %}
+                            <img src="{{ related_medicine.image.url }}" class="card-img-top" alt="{{ related_medicine.name }}" style="height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="fas fa-pills fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ related_medicine.name }}</h6>
+                            <p class="card-text small">{{ related_medicine.manufacturer }}</p>
+                            <div class="mt-auto">
+                                <p class="card-text"><strong>{{ related_medicine.price|rupees_simple }}</strong></p>
+                                <a href="{% url 'medicine_detail' related_medicine.pk %}" class="btn btn-outline-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Customer Reviews Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card" style="border: 2px solid #D2691E; border-radius: 15px;">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #8B4513, #D2691E);">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Customer Reviews</h5>
+            </div>
+            <div class="card-body">
+                <!-- Display Product Reviews -->
+                {% if product_feedbacks %}
+                <div class="row mb-4">
+                    {% for fb in product_feedbacks %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100" style="border: 1px solid #eee;">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span style="font-size: 1.5rem;" class="me-2">
+                                        {% if fb.rating == 1 %}😞{% elif fb.rating == 2 %}😕{% elif fb.rating == 3 %}😐{% elif fb.rating == 4 %}🙂{% else %}😊{% endif %}
+                                    </span>
+                                    <div>
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= fb.rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% if fb.feedback %}
+                                <p class="card-text">"{{ fb.feedback }}"</p>
+                                {% endif %}
+                                <p class="card-text mb-0">
+                                    <small class="text-muted">- {{ fb.name }} | {{ fb.created_at|date:"d M Y" }}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-4">No reviews yet. Be the first to review this product!</p>
+                {% endif %}
+                
+                <!-- Review Form Button -->
+                <div class="text-center">
+                    <button type="button" class="btn btn-lg px-5" id="showProductReviewBtn" style="background: linear-gradient(135deg, #8B4513, #D2691E); color: white;">
+                        <i class="fas fa-edit me-2"></i>Write a Review
+                    </button>
+                </div>
+                
+                <!-- Hidden Review Form -->
+                <div id="productReviewForm" class="mt-4 p-4" style="background: #f8f9fa; border-radius: 12px; display: none;">
+                    <h5 class="mb-3"><i class="fas fa-comment-dots me-2"></i>Share Your Experience with {{ medicine.name }}</h5>
+                    <form method="POST" action="{% url 'submit_product_feedback' medicine.id %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Your Name *</label>
+                                <input type="text" name="name" class="form-control" required placeholder="Enter your name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Email (Optional)</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter your email">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rate this product *</label>
+                            <div class="d-flex gap-2 flex-wrap justify-content-center rating-container">
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="1" id="prod_rating1" required>
+                                    <label for="prod_rating1">
+                                        <span class="rating-emoji">😞</span>
+                                        <span class="rating-text">Bad</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="2" id="prod_rating2">
+                                    <label for="prod_rating2">
+                                        <span class="rating-emoji">😕</span>
+                                        <span class="rating-text">Poor</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="3" id="prod_rating3">
+                                    <label for="prod_rating3">
+                                        <span class="rating-emoji">😐</span>
+                                        <span class="rating-text">Average</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="4" id="prod_rating4">
+                                    <label for="prod_rating4">
+                                        <span class="rating-emoji">🙂</span>
+                                        <span class="rating-text">Good</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="rating-box">
+                                    <input type="radio" name="rating" value="5" id="prod_rating5">
+                                    <label for="prod_rating5">
+                                        <span class="rating-emoji">😊</span>
+                                        <span class="rating-text">Excellent</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Review (Optional)</label>
+                            <textarea name="feedback" class="form-control" rows="3" placeholder="Tell us about your experience with this product..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="submit" class="btn btn-lg px-4" style="background: linear-gradient(135deg, #8B4513, #D2691E); color: white;">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                            <button type="button" class="btn btn-lg btn-outline-secondary px-4" id="cancelReviewBtn">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle Product Review Form - Inline script for immediate availability
+document.addEventListener('DOMContentLoaded', function() {
+    var showBtn = document.getElementById('showProductReviewBtn');
+    var cancelBtn = document.getElementById('cancelReviewBtn');
+    var formDiv = document.getElementById('productReviewForm');
+    
+    if (showBtn && formDiv) {
+        showBtn.addEventListener('click', function() {
+            formDiv.style.display = 'block';
+            showBtn.style.display = 'none';
+            formDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+    
+    if (cancelBtn && formDiv && showBtn) {
+        cancelBtn.addEventListener('click', function() {
+            formDiv.style.display = 'none';
+            showBtn.style.display = 'inline-block';
+        });
+    }
+});
+</script>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'medicine_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to All Medicines
+        </a>
+        <a href="{% url 'medicine_list' %}?category={{ medicine.category.id }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-tags me-2"></i>More in {{ medicine.category.name }}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Image Gallery Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">{{ medicine.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <div id="modalCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        {% if medicine.image %}
+                            <div class="carousel-item active">
+                                <img src="{{ medicine.image.url }}" class="d-block w-100" alt="{{ medicine.name }}" style="max-height: 70vh; object-fit: contain;">
+                            </div>
+                        {% endif %}
+                        {% for img in medicine.images.all %}
+                            <div class="carousel-item {% if not medicine.image and forloop.first %}active{% endif %}">
+                                <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.alt_text|default:medicine.name }}" style="max-height: 70vh; object-fit: contain;">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#modalCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(139, 69, 19, 0.8); border-radius: 50%; padding: 15px;"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#modalCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(139, 69, 19, 0.8); border-radius: 50%; padding: 15px;"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Go to specific slide
+function goToSlide(index) {
+    const carousel = document.getElementById('productCarousel');
+    const bsCarousel = bootstrap.Carousel.getOrCreateInstance(carousel);
+    bsCarousel.to(index);
+    updateThumbnails(index);
+}
+
+// Update thumbnail active state
+function updateThumbnails(index) {
+    const thumbnails = document.querySelectorAll('.thumbnail-image');
+    thumbnails.forEach((thumb, i) => {
+        if (i === index) {
+            thumb.classList.add('active');
+            thumb.style.borderColor = '#8B4513';
+        } else {
+            thumb.classList.remove('active');
+            thumb.style.borderColor = 'transparent';
+        }
+    });
+}
+
+// Listen for carousel slide events
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('productCarousel');
+    if (carousel) {
+        carousel.addEventListener('slid.bs.carousel', function(e) {
+            updateThumbnails(e.to);
+        });
+    }
+    
+    // Sync modal carousel with main carousel
+    const imageModal = document.getElementById('imageModal');
+    if (imageModal) {
+        imageModal.addEventListener('show.bs.modal', function() {
+            const mainCarousel = document.getElementById('productCarousel');
+            const modalCarousel = document.getElementById('modalCarousel');
+            if (mainCarousel && modalCarousel) {
+                const activeIndex = mainCarousel.querySelector('.carousel-item.active');
+                const items = mainCarousel.querySelectorAll('.carousel-item');
+                let index = 0;
+                items.forEach((item, i) => {
+                    if (item === activeIndex) index = i;
+                });
+                const bsModalCarousel = bootstrap.Carousel.getOrCreateInstance(modalCarousel);
+                bsModalCarousel.to(index);
+            }
+        });
+    }
+    
+    // Add hover effects to thumbnails
+    const thumbnails = document.querySelectorAll('.thumbnail-image');
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('active')) {
+                this.style.borderColor = '#DAA520';
+                this.style.transform = 'scale(1.1)';
+            }
+        });
+        
+        thumb.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.borderColor = 'transparent';
+                this.style.transform = 'scale(1)';
+            }
+        });
+    });
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    const carousel = document.getElementById('productCarousel');
+    if (carousel) {
+        const bsCarousel = bootstrap.Carousel.getOrCreateInstance(carousel);
+        if (e.key === 'ArrowLeft') {
+            bsCarousel.prev();
+        } else if (e.key === 'ArrowRight') {
+            bsCarousel.next();
+        }
+    }
+});
+
+// Touch/swipe support for mobile
+let touchStartX = 0;
+let touchEndX = 0;
+
+const carouselElement = document.getElementById('productCarousel');
+if (carouselElement) {
+    carouselElement.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    carouselElement.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: true});
+}
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    const carousel = document.getElementById('productCarousel');
+    
+    if (carousel && Math.abs(diff) > swipeThreshold) {
+        const bsCarousel = bootstrap.Carousel.getOrCreateInstance(carousel);
+        if (diff > 0) {
+            bsCarousel.next();
+        } else {
+            bsCarousel.prev();
+        }
+    }
+}
+</script>
+
+<style>
+.thumbnail-image {
+    transition: all 0.3s ease;
+}
+
+.thumbnail-image.active {
+    border-color: #8B4513 !important;
+    transform: scale(1.05);
+}
+
+.thumbnail-image:hover {
+    transform: scale(1.1);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 30px;
+    height: 30px;
+}
+
+#productCarousel .carousel-item img {
+    transition: opacity 0.3s ease;
+}
+
+/* Rating Option Styles */
+.rating-container {
+    gap: 10px;
+}
+.rating-box {
+    position: relative;
+}
+.rating-box input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.rating-box label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    min-width: 70px;
+}
+.rating-box label:hover {
+    border-color: #D2691E;
+    transform: scale(1.05);
+}
+.rating-box .rating-emoji {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    display: block;
+}
+.rating-box .rating-text {
+    font-size: 0.8rem;
+    color: #666;
+    display: block;
+}
+.rating-box input[type="radio"]:checked + label {
+    border-color: #8B4513;
+    background: linear-gradient(135deg, #fff5eb, #ffe4c4);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+.rating-box input[type="radio"]:checked + label .rating-text {
+    color: #8B4513;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .thumbnail-image {
+        width: 55px !important;
+        height: 55px !important;
+    }
+    
+    #productCarousel .carousel-item img {
+        height: 300px !important;
+    }
+    
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 25px;
+        height: 25px;
+        padding: 15px !important;
+    }
+    
+    .rating-option {
+        padding: 10px 12px;
+    }
+    .rating-option .emoji {
+        font-size: 1.5rem;
+    }
+    .rating-option .label {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,265 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Feedbacks - Admin{% endblock %}
+
+{% block page_title %}Customer & Product Feedbacks{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-0">{{ total_customer }}</h3>
+                <small>Customer Feedbacks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-0">{{ approved_customer }}</h3>
+                <small>Approved (Customer)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-0">{{ total_product }}</h3>
+                <small>Product Reviews</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <h3 class="mb-0">{{ approved_product }}</h3>
+                <small>Approved (Product)</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Type Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {% if feedback_type == 'customer' %}active{% endif %}" href="?type=customer">
+            <i class="fas fa-users me-1"></i> Customer Feedbacks
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if feedback_type == 'product' %}active{% endif %}" href="?type=product">
+            <i class="fas fa-box me-1"></i> Product Reviews
+        </a>
+    </li>
+</ul>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <input type="hidden" name="type" value="{{ feedback_type }}">
+            <div class="col-md-3">
+                <label class="form-label">Rating</label>
+                <select name="rating" class="form-select">
+                    <option value="">All Ratings</option>
+                    <option value="5" {% if rating_filter == '5' %}selected{% endif %}>😊 Excellent</option>
+                    <option value="4" {% if rating_filter == '4' %}selected{% endif %}>🙂 Good</option>
+                    <option value="3" {% if rating_filter == '3' %}selected{% endif %}>😐 Average</option>
+                    <option value="2" {% if rating_filter == '2' %}selected{% endif %}>😕 Poor</option>
+                    <option value="1" {% if rating_filter == '1' %}selected{% endif %}>😞 Bad</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    {% if feedback_type == 'customer' %}
+                    <option value="featured" {% if status_filter == 'featured' %}selected{% endif %}>Featured</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Search by name, email{% if feedback_type == 'product' %}, product{% endif %}..." value="{{ search|default:'' }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Feedbacks Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>
+            <i class="fas fa-comments me-2"></i>
+            {% if feedback_type == 'product' %}Product Reviews{% else %}Customer Feedbacks{% endif %}
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        {% if feedback_type == 'product' %}
+                        <th>Product</th>
+                        {% endif %}
+                        <th>Customer</th>
+                        <th>Rating</th>
+                        <th>Feedback</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedbacks %}
+                    <tr>
+                        {% if feedback_type == 'product' %}
+                        <td>
+                            <strong>{{ fb.medicine.name }}</strong>
+                        </td>
+                        {% endif %}
+                        <td>
+                            <strong>{{ fb.name }}</strong>
+                            {% if fb.email %}
+                            <br><small class="text-muted">{{ fb.email }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-size: 1.5rem;">
+                                {% if fb.rating == 1 %}😞{% elif fb.rating == 2 %}😕{% elif fb.rating == 3 %}😐{% elif fb.rating == 4 %}🙂{% else %}😊{% endif %}
+                            </span>
+                            <br>
+                            <small>
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= fb.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </small>
+                        </td>
+                        <td style="max-width: 250px;">
+                            {% if fb.feedback %}
+                                {{ fb.feedback|truncatewords:15 }}
+                            {% else %}
+                                <span class="text-muted fst-italic">No feedback text</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if feedback_type == 'customer' and fb.is_featured %}
+                                <span class="badge bg-info">Featured</span>
+                            {% endif %}
+                            {% if fb.is_approved %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ fb.created_at|date:"d M Y" }}<br>{{ fb.created_at|time:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group-vertical btn-group-sm">
+                                {% if not fb.is_approved %}
+                                <form method="post" action="{% url 'admin_feedback_action' fb.id %}?type={{ feedback_type }}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-success btn-sm" title="Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'admin_feedback_action' fb.id %}?type={{ feedback_type }}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="unapprove">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Unapprove">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if feedback_type == 'customer' %}
+                                    {% if not fb.is_featured %}
+                                    <form method="post" action="{% url 'admin_feedback_action' fb.id %}?type={{ feedback_type }}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="feature">
+                                        <button type="submit" class="btn btn-info btn-sm" title="Mark Featured">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="{% url 'admin_feedback_action' fb.id %}?type={{ feedback_type }}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="unfeature">
+                                        <button type="submit" class="btn btn-outline-info btn-sm" title="Remove Featured">
+                                            <i class="far fa-star"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <form method="post" action="{% url 'admin_feedback_action' fb.id %}?type={{ feedback_type }}" class="d-inline" onsubmit="return confirm('Delete this feedback?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if feedback_type == 'product' %}7{% else %}6{% endif %}" class="text-center py-4">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No {% if feedback_type == 'product' %}product reviews{% else %}customer feedbacks{% endif %} found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if feedbacks.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if feedbacks.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?type={{ feedback_type }}&page={{ feedbacks.previous_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in feedbacks.paginator.page_range %}
+                    {% if feedbacks.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > feedbacks.number|add:'-3' and num < feedbacks.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?type={{ feedback_type }}&page={{ num }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if feedbacks.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?type={{ feedback_type }}&page={{ feedbacks.next_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

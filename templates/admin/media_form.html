@@ -1,0 +1,126 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{% if video %}Edit{% else %}Add{% endif %} Video - Admin{% endblock %}
+{% block page_title %}{% if video %}Edit Video{% else %}Add New Video{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-video me-2"></i>
+                    {% if video %}Edit "{{ video.title }}"{% else %}Add New Video{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Info -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3"><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Title *</label>
+                            <input type="text" name="title" class="form-control" value="{{ video.title|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3">{{ video.description|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Video Type *</label>
+                            <select name="video_type" class="form-select" required>
+                                {% for value, label in video_type_choices %}
+                                <option value="{{ value }}" {% if video.video_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Video Source -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3"><i class="fas fa-film me-2"></i>Video Source</h6>
+                        <p class="small text-muted">Upload a video file OR provide a YouTube/Instagram URL</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Upload Video File (MP4)</label>
+                            <input type="file" name="video_file" class="form-control" accept="video/mp4,video/*">
+                            {% if video.video_file %}
+                            <div class="mt-2">
+                                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Current: {{ video.video_file.name }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-center my-3">
+                            <span class="text-muted">— OR —</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Video URL (YouTube / Instagram)</label>
+                            <input type="url" name="video_url" class="form-control" value="{{ video.video_url|default:'' }}" placeholder="https://youtube.com/watch?v=... or https://instagram.com/reel/...">
+                            <small class="text-muted">Supports YouTube videos, YouTube Shorts, and Instagram Reels</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Thumbnail -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3"><i class="fas fa-image me-2"></i>Thumbnail</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Thumbnail Image</label>
+                            <input type="file" name="thumbnail" class="form-control" accept="image/*">
+                            {% if video.thumbnail %}
+                            <div class="mt-2">
+                                <img src="{{ video.thumbnail.url }}" alt="Current thumbnail" style="max-width: 200px; border-radius: 8px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Display Settings -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3"><i class="fas fa-cog me-2"></i>Display Settings</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Display Order</label>
+                                    <input type="number" name="order" class="form-control" value="{{ video.order|default:0 }}" min="0">
+                                    <small class="text-muted">Lower numbers appear first</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3 pt-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if video.is_active or not video %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">Active (visible on website)</label>
+                                    </div>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured" {% if video.is_featured %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_featured">Featured (show prominently)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_media' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{% if video %}Update{% else %}Add{% endif %} Video
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

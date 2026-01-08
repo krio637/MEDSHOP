@@ -1,0 +1,906 @@
+{% extends 'admin/base_admin.html' %}
+{% load currency_filters %}
+
+{% block page_title %}Manage Medicines{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'admin_medicine_add' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus-circle"></i> Add New Medicine
+    </a>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#quickAddModal">
+        <i class="fas fa-bolt"></i> Quick Add
+    </button>
+    
+    <!-- Import/Export Dropdown -->
+    <div class="dropdown">
+        <button class="btn btn-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download"></i> Import/Export
+        </button>
+        <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Import</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="alert('CSV import feature coming soon!')">
+                <i class="fas fa-file-csv"></i> Import from CSV
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="alert('Excel import feature coming soon!')">
+                <i class="fas fa-file-excel"></i> Import from Excel
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Export</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="exportMedicines('csv')">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportMedicines('excel')">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a></li>
+        </ul>
+    </div>
+    
+    <!-- Delete Actions Dropdown -->
+    <div class="dropdown">
+        <button class="btn btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-trash"></i> Delete Options
+        </button>
+        <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Quick Delete</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="quickDelete('out_of_stock')">
+                <i class="fas fa-times-circle text-danger"></i> Delete Out of Stock
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="quickDelete('inactive')">
+                <i class="fas fa-ban text-warning"></i> Delete Inactive
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="quickDelete('expired')">
+                <i class="fas fa-clock text-danger"></i> Delete Expired
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Bulk Delete</h6></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                <i class="fas fa-trash-alt text-danger"></i> Advanced Delete
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
+                       placeholder="Medicine name or manufacturer">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_filter %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="stock" class="form-label">Stock Status</label>
+                <select class="form-select" id="stock" name="stock">
+                    <option value="">All Stock Levels</option>
+                    <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>In Stock (>10)</option>
+                    <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>Low Stock (1-10)</option>
+                    <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>Out of Stock (0)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_medicines' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST" action="{% url 'admin_bulk_actions' %}" id="bulkForm">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="action" class="form-label">Bulk Actions</label>
+                    <select class="form-select" id="action" name="action">
+                        <option value="">Select Action</option>
+                        <optgroup label="Status Actions">
+                            <option value="activate">✅ Activate Selected</option>
+                            <option value="deactivate">❌ Deactivate Selected</option>
+                        </optgroup>
+                        <optgroup label="Stock Actions">
+                            <option value="update_stock">📦 Update Stock</option>
+                            <option value="mark_low_stock">⚠️ Mark as Low Stock</option>
+                        </optgroup>
+                        <optgroup label="Delete Actions">
+                            <option value="delete_selected">🗑️ Delete Selected</option>
+                            <option value="delete_out_of_stock">🚫 Delete Out of Stock</option>
+                            <option value="delete_inactive">💀 Delete Inactive</option>
+                            <option value="delete_expired">⏰ Delete Expired</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-3" id="stockInput" style="display: none;">
+                    <label for="new_stock" class="form-label">New Stock Quantity</label>
+                    <input type="number" class="form-control" id="new_stock" name="new_stock" min="0">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-warning" id="bulkActionBtn" onclick="return confirmBulkAction()">
+                        <i class="fas fa-cogs"></i> Apply
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-danger" onclick="bulkDelete()" id="bulkDeleteBtn" style="display: none;">
+                            <i class="fas fa-trash"></i> Delete Selected
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" onclick="selectAllVisible()">
+                            <i class="fas fa-check-square"></i> Select All
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medicines Table - Desktop -->
+<div class="card d-none d-md-block">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine in medicines %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="medicine_ids" value="{{ medicine.id }}" form="bulkForm">
+                        </td>
+                        <td>
+                            <div class="position-relative">
+                                {% if medicine.image %}
+                                    <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" 
+                                         style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                {% elif medicine.images.exists %}
+                                    <img src="{{ medicine.images.first.image.url }}" alt="{{ medicine.name }}" 
+                                         style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-pills text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                {% if medicine.images.count > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" 
+                                          style="font-size: 0.6rem;" title="{{ medicine.images.count }} additional images">
+                                        +{{ medicine.images.count }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ medicine.name }}</div>
+                            <small class="text-muted">{{ medicine.manufacturer|default:"Manufacturer not specified" }}</small>
+                        </td>
+                        <td>{{ medicine.category.name }}</td>
+                        <td>{{ medicine.price|rupees_simple }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if medicine.stock_quantity == 0 %}bg-danger
+                                {% elif medicine.stock_quantity <= 10 %}bg-warning
+                                {% else %}bg-success{% endif %}">
+                                {{ medicine.stock_quantity }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if medicine.prescription_type == 'RX' %}
+                                <span class="badge bg-warning">Prescription</span>
+                            {% else %}
+                                <span class="badge bg-success">OTC</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if medicine.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'admin_medicine_edit' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'medicine_detail' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-info" title="View" target="_blank">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'admin_medicine_delete' medicine.id %}" 
+                                   class="btn btn-sm btn-outline-danger" title="Delete"
+                                   onclick="return confirm('Are you sure you want to delete this medicine?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No medicines found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Medicines Cards - Mobile -->
+<div class="d-md-none">
+    {% for medicine in medicines %}
+    <div class="card mb-3">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-start">
+                <div class="me-3">
+                    <input type="checkbox" name="medicine_ids" value="{{ medicine.id }}" form="bulkForm" class="me-2">
+                    {% if medicine.image %}
+                        <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" 
+                             style="width: 60px; height: 60px; object-fit: cover;" class="rounded">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-pills text-muted fa-2x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ medicine.name }}</h6>
+                    <small class="text-muted d-block">{{ medicine.manufacturer|default:"Manufacturer not specified" }}</small>
+                    <small class="text-muted">{{ medicine.category.name }}</small>
+                    <div class="mt-2">
+                        <strong class="text-primary">{{ medicine.price|rupees_simple }}</strong>
+                        <span class="badge ms-2 {% if medicine.stock_quantity == 0 %}bg-danger{% elif medicine.stock_quantity <= 10 %}bg-warning{% else %}bg-success{% endif %}">
+                            Stock: {{ medicine.stock_quantity }}
+                        </span>
+                    </div>
+                    <div class="mt-1">
+                        {% if medicine.prescription_type == 'RX' %}
+                            <span class="badge bg-warning">RX</span>
+                        {% else %}
+                            <span class="badge bg-success">OTC</span>
+                        {% endif %}
+                        {% if medicine.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3 pt-2 border-top">
+                <a href="{% url 'admin_medicine_edit' medicine.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'medicine_detail' medicine.id %}" class="btn btn-sm btn-outline-info" target="_blank">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="{% url 'admin_medicine_delete' medicine.id %}" class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Delete this medicine?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">No medicines found</div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+<div class="card d-none d-md-block">
+    <div class="card-body">
+
+        <!-- Pagination -->
+        {% if medicines.has_other_pages %}
+        <nav aria-label="Medicines pagination">
+            <ul class="pagination justify-content-center">
+                {% if medicines.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in medicines.paginator.page_range %}
+                    {% if medicines.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > medicines.number|add:'-3' and num < medicines.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if medicines.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Mobile Pagination -->
+<div class="d-md-none">
+    {% if medicines.has_other_pages %}
+    <nav aria-label="Medicines pagination">
+        <ul class="pagination pagination-sm justify-content-center flex-wrap">
+            {% if medicines.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.previous_page_number }}">Prev</a>
+                </li>
+            {% endif %}
+            <li class="page-item active">
+                <span class="page-link">{{ medicines.number }} / {{ medicines.paginator.num_pages }}</span>
+            </li>
+            {% if medicines.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ medicines.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+<!-- Quick Add Medicine Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bolt text-success"></i> Quick Add Medicine
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_medicine_add' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Quick Add:</strong> Fill in the essential details. You can edit more details later.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="quick_name" class="form-label">Medicine Name *</label>
+                                <input type="text" class="form-control" id="quick_name" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="quick_category" class="form-label">Category *</label>
+                                <select class="form-select" id="quick_category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quick_description" class="form-label">Description *</label>
+                        <textarea class="form-control" id="quick_description" name="description" rows="2" required 
+                                  placeholder="Brief description of the medicine..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="quick_price" class="form-label">Price (₹) *</label>
+                                <input type="number" class="form-control" id="quick_price" name="price" 
+                                       step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="quick_stock" class="form-label">Stock Quantity *</label>
+                                <input type="number" class="form-control" id="quick_stock" name="stock_quantity" 
+                                       min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="quick_type" class="form-label">Type *</label>
+                                <select class="form-select" id="quick_type" name="prescription_type" required>
+                                    <option value="OTC">Over the Counter</option>
+                                    <option value="RX">Prescription Required</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="quick_manufacturer" class="form-label">Manufacturer</label>
+                                <input type="text" class="form-control" id="quick_manufacturer" name="manufacturer" 
+                                       placeholder="Optional">
+                                <small class="text-muted">Optional field</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="quick_expiry" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="quick_expiry" name="expiry_date">
+                                <small class="text-muted">Optional field</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields with default values -->
+                    <input type="hidden" name="mrp" id="quick_mrp">
+                    <input type="hidden" name="is_active" value="on">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Medicine
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Bulk Delete Medicines
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning"></i>
+                    <strong>Warning:</strong> This action cannot be undone. Please select carefully.
+                </div>
+                
+                <form id="bulkDeleteForm">
+                    <div class="mb-3">
+                        <label class="form-label">Delete medicines that are:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="delete_out_of_stock" name="delete_criteria" value="out_of_stock">
+                            <label class="form-check-label" for="delete_out_of_stock">
+                                <span class="badge bg-danger">Out of Stock (0 items)</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="delete_inactive" name="delete_criteria" value="inactive">
+                            <label class="form-check-label" for="delete_inactive">
+                                <span class="badge bg-secondary">Inactive</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="delete_expired" name="delete_criteria" value="expired">
+                            <label class="form-check-label" for="delete_expired">
+                                <span class="badge bg-warning">Expired</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="delete_low_stock" name="delete_criteria" value="low_stock">
+                            <label class="form-check-label" for="delete_low_stock">
+                                <span class="badge bg-warning">Low Stock (≤5 items)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="delete_category" class="form-label">From specific category (optional):</label>
+                        <select class="form-select" id="delete_category" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+                
+                <div id="deletePreview" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <strong>Preview:</strong> <span id="deleteCount">0</span> medicines will be deleted.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="previewDelete()">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button type="button" class="btn btn-danger" onclick="executeBulkDelete()" id="confirmDeleteBtn" disabled>
+                    <i class="fas fa-trash"></i> Delete Medicines
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ medicines.paginator.count }}</h4>
+                        <p class="mb-0">Total Medicines</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="activeCount">-</h4>
+                        <p class="mb-0">Active Medicines</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="lowStockCount">-</h4>
+                        <p class="mb-0">Low Stock</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="outOfStockCount">-</h4>
+                        <p class="mb-0">Out of Stock</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select all checkbox functionality
+const selectAllCheckbox = document.getElementById('selectAll');
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="medicine_ids"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+}
+
+// Show/hide stock input and delete button based on action selection
+const actionSelect = document.getElementById('action');
+const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+if (actionSelect) {
+    actionSelect.addEventListener('change', function() {
+        const stockInput = document.getElementById('stockInput');
+        const bulkActionBtn = document.getElementById('bulkActionBtn');
+        
+        // Hide all conditional elements first
+        stockInput.style.display = 'none';
+        if (bulkDeleteBtn) bulkDeleteBtn.style.display = 'none';
+        
+        if (this.value === 'update_stock') {
+            stockInput.style.display = 'block';
+        } else if (this.value.includes('delete')) {
+            if (bulkDeleteBtn) bulkDeleteBtn.style.display = 'inline-block';
+            bulkActionBtn.className = 'btn btn-danger';
+            bulkActionBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        } else {
+            bulkActionBtn.className = 'btn btn-warning';
+            bulkActionBtn.innerHTML = '<i class="fas fa-cogs"></i> Apply';
+        }
+    });
+}
+
+// Quick add form - auto-calculate MRP
+const quickPriceInput = document.getElementById('quick_price');
+const quickMrpInput = document.getElementById('quick_mrp');
+
+if (quickPriceInput && quickMrpInput) {
+    quickPriceInput.addEventListener('input', function() {
+        // Set MRP to be 20% higher than selling price (common practice)
+        const price = parseFloat(this.value) || 0;
+        const mrp = Math.round(price * 1.2 * 100) / 100; // Round to 2 decimal places
+        quickMrpInput.value = mrp;
+    });
+}
+
+// Calculate and display statistics
+function calculateStats() {
+    let activeCount = 0;
+    let lowStockCount = 0;
+    let outOfStockCount = 0;
+    
+    // Count from visible table rows
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const statusBadge = row.querySelector('td:nth-child(8) .badge');
+        const stockBadge = row.querySelector('td:nth-child(6) .badge');
+        
+        if (statusBadge && statusBadge.textContent.trim() === 'Active') {
+            activeCount++;
+        }
+        
+        if (stockBadge) {
+            const stockValue = parseInt(stockBadge.textContent.trim());
+            if (stockValue === 0) {
+                outOfStockCount++;
+            } else if (stockValue <= 10) {
+                lowStockCount++;
+            }
+        }
+    });
+    
+    // Update the statistics cards
+    const activeCountEl = document.getElementById('activeCount');
+    const lowStockCountEl = document.getElementById('lowStockCount');
+    const outOfStockCountEl = document.getElementById('outOfStockCount');
+    
+    if (activeCountEl) activeCountEl.textContent = activeCount;
+    if (lowStockCountEl) lowStockCountEl.textContent = lowStockCount;
+    if (outOfStockCountEl) outOfStockCountEl.textContent = outOfStockCount;
+}
+
+// Calculate stats when page loads
+document.addEventListener('DOMContentLoaded', calculateStats);
+
+// Set minimum expiry date to today
+const quickExpiryInput = document.getElementById('quick_expiry');
+if (quickExpiryInput) {
+    const today = new Date().toISOString().split('T')[0];
+    quickExpiryInput.min = today;
+    
+    // Set default to 2 years from now
+    const twoYearsFromNow = new Date();
+    twoYearsFromNow.setFullYear(twoYearsFromNow.getFullYear() + 2);
+    quickExpiryInput.value = twoYearsFromNow.toISOString().split('T')[0];
+}
+
+// Enhanced delete functionality
+function confirmBulkAction() {
+    const action = document.getElementById('action').value;
+    const selectedCount = document.querySelectorAll('input[name="medicine_ids"]:checked').length;
+    
+    if (selectedCount === 0) {
+        alert('Please select at least one medicine.');
+        return false;
+    }
+    
+    let message = '';
+    if (action.includes('delete')) {
+        message = `Are you sure you want to DELETE ${selectedCount} selected medicine(s)? This action cannot be undone.`;
+    } else {
+        message = `Are you sure you want to apply this action to ${selectedCount} selected medicine(s)?`;
+    }
+    
+    return confirm(message);
+}
+
+function bulkDelete() {
+    const selectedCount = document.querySelectorAll('input[name="medicine_ids"]:checked').length;
+    if (selectedCount === 0) {
+        alert('Please select medicines to delete.');
+        return;
+    }
+    
+    if (confirm(`Delete ${selectedCount} selected medicine(s)? This cannot be undone.`)) {
+        document.getElementById('action').value = 'delete_selected';
+        document.getElementById('bulkForm').submit();
+    }
+}
+
+function selectAllVisible() {
+    const checkboxes = document.querySelectorAll('input[name="medicine_ids"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSelectionCount();
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('input[name="medicine_ids"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    document.getElementById('selectAll').checked = false;
+    updateSelectionCount();
+}
+
+function updateSelectionCount() {
+    const selectedCount = document.querySelectorAll('input[name="medicine_ids"]:checked').length;
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
+    if (selectedCount > 0) {
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.style.display = 'inline-block';
+            bulkDeleteBtn.innerHTML = `<i class="fas fa-trash"></i> Delete (${selectedCount})`;
+        }
+    } else {
+        if (bulkDeleteBtn) bulkDeleteBtn.style.display = 'none';
+    }
+}
+
+function quickDelete(type) {
+    let message = '';
+    let action = '';
+    
+    switch(type) {
+        case 'out_of_stock':
+            message = 'Delete all medicines that are out of stock (0 quantity)?';
+            action = 'delete_out_of_stock';
+            break;
+        case 'inactive':
+            message = 'Delete all inactive medicines?';
+            action = 'delete_inactive';
+            break;
+        case 'expired':
+            message = 'Delete all expired medicines?';
+            action = 'delete_expired';
+            break;
+    }
+    
+    if (confirm(message + ' This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "admin_bulk_actions" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = action;
+        
+        form.appendChild(csrfInput);
+        form.appendChild(actionInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function previewDelete() {
+    // This would make an AJAX call to preview what will be deleted
+    // For now, show a simple preview
+    const criteria = document.querySelectorAll('input[name="delete_criteria"]:checked');
+    if (criteria.length === 0) {
+        alert('Please select at least one criteria.');
+        return;
+    }
+    
+    document.getElementById('deletePreview').style.display = 'block';
+    document.getElementById('deleteCount').textContent = '?'; // Would be calculated via AJAX
+    document.getElementById('confirmDeleteBtn').disabled = false;
+}
+
+function executeBulkDelete() {
+    const criteria = Array.from(document.querySelectorAll('input[name="delete_criteria"]:checked'))
+                          .map(cb => cb.value);
+    
+    if (criteria.length === 0) {
+        alert('Please select deletion criteria.');
+        return;
+    }
+    
+    if (confirm('This will permanently delete the selected medicines. Continue?')) {
+        // Execute the bulk delete
+        alert('Bulk delete functionality will be implemented in the backend.');
+        // Would submit form to backend
+    }
+}
+
+function exportMedicines(format) {
+    const url = `{% url 'admin_generate_report' %}?type=inventory&format=${format}`;
+    window.open(url, '_blank');
+}
+
+// Add event listeners for selection tracking
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="medicine_ids"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionCount);
+    });
+    
+    updateSelectionCount();
+});
+</script>
+
+<!-- Floating Action Button for Mobile -->
+<div class="d-md-none">
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <button class="btn btn-primary btn-lg rounded-circle shadow" 
+                data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                style="width: 60px; height: 60px;">
+            <i class="fas fa-plus fa-lg"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+.stats-card {
+    transition: transform 0.2s;
+}
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+.floating-btn {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+
+<script>
+</script>
+{% endblock %}
